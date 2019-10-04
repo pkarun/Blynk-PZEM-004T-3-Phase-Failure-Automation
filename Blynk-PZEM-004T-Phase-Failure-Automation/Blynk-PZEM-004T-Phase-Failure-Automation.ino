@@ -24,7 +24,7 @@
 
 */
 
-#define BLYNK_PRINT Serial 
+#define BLYNK_PRINT Serial
 
 //#include "settings.h"           // Make sure you UNCOMMENT this before you use.
 #include "my_settings.h"          // This is my personal settings. You can remove this line or comment-out when you are using.
@@ -39,20 +39,19 @@
 
 
 #include <SoftwareSerial.h>                                   //(NODEMCU ESP8266)
-SoftwareSerial pzemSerial(RX_PIN_NODEMCU, TX_PIN_NODEMCU);    //(RX,TX) NodeMCU connect to (TX,RX) of PZEM                  
+SoftwareSerial pzemSerial(RX_PIN_NODEMCU, TX_PIN_NODEMCU);    //(RX,TX) NodeMCU connect to (TX,RX) of PZEM
 
 /*
- *  This is the address of Pzem devices on the network. Each pzem device has to set unique
- *  address when we are working with muliple pzem device (multiple modbus devices/multiple slaves)
- *  You can use the changeAddress(OldAddress, Newaddress) function below in the code to assign new
- *  address to each pzem device first time.
-   
+    This is the address of Pzem devices on the network. Each pzem device has to set unique
+    address when we are working with muliple pzem device (multiple modbus devices/multiple slaves)
+    You can use the changeAddress(OldAddress, Newaddress) function below in the code to assign new
+    address to each pzem device first time.
+
 */
 
-static uint8_t pzemSlave1Addr = PZEM_SLAVE_1_ADDRESS; 
+static uint8_t pzemSlave1Addr = PZEM_SLAVE_1_ADDRESS;
 static uint8_t pzemSlave2Addr = PZEM_SLAVE_2_ADDRESS;
 
-unsigned long lastMillis = 0;
 unsigned long oldTime = 0;
 
 ModbusMaster node1;
@@ -60,25 +59,23 @@ ModbusMaster node2;
 
 BlynkTimer timer;
 
-double voltage_usage_1      = 0; 
+double voltage_usage_1      = 0;
 double current_usage_1      = 0;
 double active_power_1       = 0;
 double active_energy_1      = 0;
 double frequency_1          = 0;
-double power_factor_1       = 0; 
+double power_factor_1       = 0;
 double over_power_alarm_1   = 0;
- 
+
 double voltage_usage_2      = 0;
 double current_usage_2      = 0;
 double active_power_2       = 0;
 double active_energy_2      = 0;
 double frequency_2          = 0;
-double power_factor_2       = 0; 
+double power_factor_2       = 0;
 double over_power_alarm_2   = 0;
 
 /* Relay */
-
-//void checkPhysicalButton();
 
 int relay1State             = LOW;
 int pushButton1State        = HIGH;
@@ -93,10 +90,8 @@ int relay4State             = LOW;
 //int pushButton4State        = HIGH;
 
 
-
-
-void sendtoBlynk()                                // Here we are sending PZEM data to blynk
-{                                    
+void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
+{
   Blynk.virtualWrite(vPIN_VOLTAGE_1,               voltage_usage_1);
   Blynk.virtualWrite(vPIN_CURRENT_USAGE_1,         current_usage_1);
   Blynk.virtualWrite(vPIN_ACTIVE_POWER_1,          active_power_1);
@@ -111,22 +106,20 @@ void sendtoBlynk()                                // Here we are sending PZEM da
   Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_2,         active_energy_2);
   Blynk.virtualWrite(vPIN_FREQUENCY_2,             frequency_2);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_2,          power_factor_2);
-  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_2,      over_power_alarm_2);  
+  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_2,      over_power_alarm_2);
 }
 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
 {
-   
-  
-  Serial.println("====================================================");     // PZEM Device 1 data fetching code starts here 
+  Serial.println("====================================================");     // PZEM Device 1 data fetching code starts here
   Serial.println("Now checking Modbus 1");
   uint8_t result1;
 
-  ESP.wdtDisable();                                                           // Disable watchdog during modbus read or else ESP crashes when no slave connected                                               
+  ESP.wdtDisable();                                                           // Disable watchdog during modbus read or else ESP crashes when no slave connected
   result1 = node1.readInputRegisters(0x0000, 10);
-  ESP.wdtEnable(1);                                                           // Enable watchdog during modbus read  
-  
-  if (result1 == node1.ku8MBSuccess) 
+  ESP.wdtEnable(1);                                                           // Enable watchdog during modbus read
+
+  if (result1 == node1.ku8MBSuccess)
   {
     voltage_usage_1      = (node1.getResponseBuffer(0x00) / 10.0f);
     current_usage_1      = (node1.getResponseBuffer(0x01) / 1000.000f);
@@ -145,28 +138,22 @@ void pzemdevice1()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_1);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_1, 0);
     Serial.println("====================================================");
-     
   }
-
   else {
     Serial.println("Failed to read modbus 1");
-    
   }
 }
 
-
- void pzemdevice2()                                                             // Function to get PZEM device 2 data
- {
-      
- 
-  Serial.println("===================================================="); 
+void pzemdevice2()                                                             // Function to get PZEM device 2 data
+{
+  Serial.println("====================================================");
   Serial.println("Now checking Modbus 2");
   uint8_t result2;
-  
+
   ESP.wdtDisable();
   result2 = node2.readInputRegisters(0x0000, 10);
   ESP.wdtEnable(1);
-  
+
   if (result2 == node2.ku8MBSuccess)
   {
     voltage_usage_2      = (node2.getResponseBuffer(0x00) / 10.0f);
@@ -186,19 +173,16 @@ void pzemdevice1()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
-     
-    
   }
-
   else {
-    Serial.println("Failed to read modbus 2"); 
+    Serial.println("Failed to read modbus 2");
   }
 }
 
-void resetEnergy(uint8_t slaveAddr)                                                 // Function to reset energy value on PZEM device. 
+void resetEnergy(uint8_t slaveAddr)                                                 // Function to reset energy value on PZEM device.
 {
   /* The command to reset the slave's energy is (total 4 bytes):
-   * Slave address + 0x42 + CRC check high byte + CRC check low byte. */
+     Slave address + 0x42 + CRC check high byte + CRC check low byte. */
   uint16_t u16CRC = 0xFFFF;
   static uint8_t resetCommand = 0x42;
   u16CRC = crc16_update(u16CRC, slaveAddr);
@@ -210,7 +194,6 @@ void resetEnergy(uint8_t slaveAddr)                                             
   pzemSerial.write(highByte(u16CRC));
   delay(1000);
 }
-
 
 void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                    // Function to change/assign pzem address
 {
@@ -237,13 +220,9 @@ void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                  
   delay(1000);
 }
 
-
-
 /***************************************************
- *        Relay Functions
+          Relay Functions
  **************************************************/
-
-
 
 BLYNK_CONNECTED() {                                           // Every time we connect to the cloud...
 
@@ -252,12 +231,12 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_3);
   Blynk.syncVirtual(VPIN_BUTTON_4);
 
-/*  Alternatively, you could override server state using:
-  Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
-  Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
-  Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
-  Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
-*/
+  /*  Alternatively, you could override server state using:
+    Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
+    Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
+    Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
+    Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
+  */
 }
 
 /* When App button is pushed - switch the state */
@@ -267,7 +246,6 @@ BLYNK_WRITE(VPIN_BUTTON_1) {
   relay1State = param.asInt();
   digitalWrite(RELAY_PIN_1, relay1State);
 }
-
 BLYNK_WRITE(VPIN_BUTTON_2) {
   relay2State = param.asInt();
   digitalWrite(RELAY_PIN_2, relay2State);
@@ -281,7 +259,7 @@ BLYNK_WRITE(VPIN_BUTTON_4) {
   digitalWrite(RELAY_PIN_4, relay4State);
 }
 
-void checkPhysicalButton()
+void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
     // pushButton1State is used to avoid sequential toggles
@@ -315,77 +293,78 @@ void checkPhysicalButton()
     pushButton2State = HIGH;
   }
 
-//  if (digitalRead(PUSH_BUTTON_3) == LOW) {
-//    // pushButton3State is used to avoid sequential toggles
-//    if (pushButton3State != LOW) {
-//
-//      // Toggle Relay state
-//      relay3State = !relay3State;
-//      digitalWrite(RELAY_PIN_3, relay3State);
-//
-//      // Update Button Widget
-//      Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
-//    }
-//    pushButton3State = LOW;
-//  } else {
-//    pushButton3State = HIGH;
-//  }
-//
-//  if (digitalRead(PUSH_BUTTON_4) == LOW) {
-//    // pushButton4State is used to avoid sequential toggles
-//    if (pushButton4State != LOW) {
-//
-//      // Toggle Relay state
-//      relay4State = !relay4State;
-//      digitalWrite(RELAY_PIN_4, relay4State);
-//
-//      // Update Button Widget
-//      Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
-//    }
-//    pushButton4State = LOW;
-//  } else {
-//    pushButton4State = HIGH;
-//  }
+/* push button 3 and push button 4 are disabled */
+
+  //  if (digitalRead(PUSH_BUTTON_3) == LOW) {
+  //    // pushButton3State is used to avoid sequential toggles
+  //    if (pushButton3State != LOW) {
+  //
+  //      // Toggle Relay state
+  //      relay3State = !relay3State;
+  //      digitalWrite(RELAY_PIN_3, relay3State);
+  //
+  //      // Update Button Widget
+  //      Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
+  //    }
+  //    pushButton3State = LOW;
+  //  } else {
+  //    pushButton3State = HIGH;
+  //  }
+
+  //  if (digitalRead(PUSH_BUTTON_4) == LOW) {
+  //    // pushButton4State is used to avoid sequential toggles
+  //    if (pushButton4State != LOW) {
+  //
+  //      // Toggle Relay state
+  //      relay4State = !relay4State;
+  //      digitalWrite(RELAY_PIN_4, relay4State);
+  //
+  //      // Update Button Widget
+  //      Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
+  //    }
+  //    pushButton4State = LOW;
+  //  } else {
+  //    pushButton4State = HIGH;
+  //  }
 }
 
-
-void setup() 
+void setup()
 {
   Serial.begin(115200);
   pzemSerial.begin(9600);
 
   /* start Modbus/RS-485 serial communication */
-  
+
   node1.begin(pzemSlave1Addr, pzemSerial);
   node2.begin(pzemSlave2Addr, pzemSerial);
 
 
-/*********************************************************************************************\
- *  Change PZEM address 
-\*********************************************************************************************/
+  /*********************************************************************************************\
+      Change PZEM address
+  \*********************************************************************************************/
 
-  /* 
-   *  changeAddress(OldAddress, Newaddress)
-   *  By Uncomment the function in the below line you can change the slave address from one of the nodes (pzem device),
-   *  only need to be done ones. Preverable do this only with 1 slave in the network.
-   *  If you forgot or don't know the new address anymore, you can use the broadcast address 0XF8 as OldAddress to change the slave address.
-   *  Use this with one slave ONLY in the network.
-   *  This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
-   *  works.
-   */
+  /*
+      changeAddress(OldAddress, Newaddress)
+      By Uncomment the function in the below line you can change the slave address from one of the nodes (pzem device),
+      only need to be done ones. Preverable do this only with 1 slave in the network.
+      If you forgot or don't know the new address anymore, you can use the broadcast address 0XF8 as OldAddress to change the slave address.
+      Use this with one slave ONLY in the network.
+      This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
+      works.
+  */
 
 
   //changeAddress(0x01, 0x02);                 // uncomment to set pzem address
 
 
-/*********************************************************************************************\
- *  RESET PZEM Energy 
-\*********************************************************************************************/
+  /*********************************************************************************************\
+      RESET PZEM Energy
+  \*********************************************************************************************/
 
-  /*   
-   *    By Uncomment the function in the below line you can reset the energy counter (Wh) back to zero from one of the slaves.
-   *    resetEnergy(pzemSlaveAddr);
-   */
+  /*
+        By Uncomment the function in the below line you can reset the energy counter (Wh) back to zero from one of the slaves.
+        resetEnergy(pzemSlaveAddr);
+  */
 
 
   //resetEnergy(0x01);                        // uncomment to reset pzem energy
@@ -401,10 +380,9 @@ void setup()
   ArduinoOTA.begin();
 
 
-/*********************************************************************************************\
- *  RELAY code
-\*********************************************************************************************/
-
+  /*********************************************************************************************\
+      RELAY code
+  \*********************************************************************************************/
 
   pinMode(RELAY_PIN_1, OUTPUT);
   pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
@@ -415,41 +393,32 @@ void setup()
   pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
   digitalWrite(RELAY_PIN_2, relay2State);
 
-
   pinMode(RELAY_PIN_3, OUTPUT);
- // pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
+  //  pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
   digitalWrite(RELAY_PIN_3, relay3State);
 
-
   pinMode(RELAY_PIN_4, OUTPUT);
- // pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
+  //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
   digitalWrite(RELAY_PIN_4, relay4State);
 
-  
-  timer.setInterval(500L, checkPhysicalButton);   // Setup a Relay function to be called every 100 ms
-  timer.setInterval(1000L, sendtoBlynk);          // Send PZEM values blynk server every 10 sec
+  timer.setInterval(500L, checkPhysicalButton);           // Setup a Relay function to be called every 100 ms
+  timer.setInterval(1000L, sendtoBlynk);                  // Send PZEM values blynk server every 10 sec
 
 }
 
-void checktime()
+void checktime()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
 {
-  Serial.println("now in check time fun before if");
-  if ((millis() - oldTime) > 10000) {
+    if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME)               
     oldTime = millis();
-    Serial.println("now in check time fun after if");
     pzemdevice1();
     pzemdevice2();
   }
 }
 
-void loop() 
+void loop()
 {
-
   Blynk.run();
-  ArduinoOTA.handle();           // For OTA
+  ArduinoOTA.handle();                                    // For OTA
   timer.run();
   checktime();
-//  pzemdevice1();
-//  pzemdevice2();
-  //delay(1000);
 }
