@@ -408,7 +408,7 @@ void setup()
 
 void checktime()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
 {
-    if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME)               
+    if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME){               
     oldTime = millis();
     pzemdevice1();
     pzemdevice2();
