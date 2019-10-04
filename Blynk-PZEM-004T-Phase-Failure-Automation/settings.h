@@ -32,6 +32,7 @@
 
 #define PZEM_SLAVE_1_ADDRESS     0x01                       // Make sure you assign address to pzem first before you use
 #define PZEM_SLAVE_2_ADDRESS     0x02
+#define PZEM_SLAVE_3_ADDRESS     0x03
 
 /* PZEM how often you wish to get PZEM data */
 
@@ -48,7 +49,7 @@
 #define VPIN_BUTTON_3                 V3
 #define VPIN_BUTTON_4                 V4
 
-/* Blynk label vpin */
+/* Blynk Labeled Value vpin */
 
 #define vPIN_VOLTAGE_1                V11
 #define vPIN_CURRENT_USAGE_1          V12
@@ -66,6 +67,14 @@
 #define vPIN_POWER_FACTOR_2           V26
 #define vPIN_OVER_POWER_ALARM_2       V27
 
+#define vPIN_VOLTAGE_3                V31
+#define vPIN_CURRENT_USAGE_3          V32
+#define vPIN_ACTIVE_POWER_3           V33
+#define vPIN_ACTIVE_ENERGY_3          V34
+#define vPIN_FREQUENCY_3              V35
+#define vPIN_POWER_FACTOR_3           V36
+#define vPIN_OVER_POWER_ALARM_3       V37
+
 /***************************************************
          Blynk Settings
  **************************************************/
@@ -77,8 +86,8 @@
           WiFi Settings
  **************************************************/
 
-#define WIFI_SSID "Your WiFi Network Name"                      // Your WiFi Network Name
-#define WIFI_PASS "Your Wifi Password"                          // Your Wifi Password
+#define WIFI_SSID "Your WiFi Network Name"                      
+#define WIFI_PASS "9448873197"                                  
 
 
 /***************************************************

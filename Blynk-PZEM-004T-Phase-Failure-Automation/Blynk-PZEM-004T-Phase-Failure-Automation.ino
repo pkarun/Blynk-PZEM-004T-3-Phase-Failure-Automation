@@ -1,5 +1,5 @@
 /*
-   Blynk PZEM 004T v3.0 Multiple Device (Here 2 Pzem) Connection Program
+   Blynk PZEM 004T v3.0 - 3 Phase Failure Motor Automation
 
    Source: https://github.com/pkarun/Blynk-PZEM-004T-v3.0-Multiple-device
    https://github.com/pkarun/Blynk-PZEM-004T-v3.0
@@ -24,7 +24,7 @@
 
 */
 
-#define BLYNK_PRINT Serial
+//#define BLYNK_PRINT Serial
 
 //#include "settings.h"           // Make sure you UNCOMMENT this before you use.
 #include "my_settings.h"          // This is my personal settings. You can remove this line or comment-out when you are using.
@@ -51,11 +51,14 @@ SoftwareSerial pzemSerial(RX_PIN_NODEMCU, TX_PIN_NODEMCU);    //(RX,TX) NodeMCU 
 
 static uint8_t pzemSlave1Addr = PZEM_SLAVE_1_ADDRESS;
 static uint8_t pzemSlave2Addr = PZEM_SLAVE_2_ADDRESS;
+static uint8_t pzemSlave3Addr = PZEM_SLAVE_3_ADDRESS;
 
 unsigned long oldTime = 0;
 
 ModbusMaster node1;
 ModbusMaster node2;
+ModbusMaster node3;
+
 
 BlynkTimer timer;
 
@@ -74,6 +77,14 @@ double active_energy_2      = 0;
 double frequency_2          = 0;
 double power_factor_2       = 0;
 double over_power_alarm_2   = 0;
+
+double voltage_usage_3      = 0;
+double current_usage_3      = 0;
+double active_power_3       = 0;
+double active_energy_3      = 0;
+double frequency_3          = 0;
+double power_factor_3       = 0;
+double over_power_alarm_3   = 0;
 
 /* Relay */
 
@@ -107,6 +118,14 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_FREQUENCY_2,             frequency_2);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_2,          power_factor_2);
   Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_2,      over_power_alarm_2);
+
+  Blynk.virtualWrite(vPIN_VOLTAGE_3,               voltage_usage_3);
+  Blynk.virtualWrite(vPIN_CURRENT_USAGE_3,         current_usage_3);
+  Blynk.virtualWrite(vPIN_ACTIVE_POWER_3,          active_power_3);
+  Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_3,         active_energy_3);
+  Blynk.virtualWrite(vPIN_FREQUENCY_3,             frequency_3);
+  Blynk.virtualWrite(vPIN_POWER_FACTOR_3,          power_factor_3);
+  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_3,      over_power_alarm_3);
 }
 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
@@ -176,6 +195,41 @@ void pzemdevice2()                                                             /
   }
   else {
     Serial.println("Failed to read modbus 2");
+  }
+}
+
+void pzemdevice3()                                                            // Function to get PZEM device 1 data
+{
+  Serial.println("====================================================");     // PZEM Device 1 data fetching code starts here
+  Serial.println("Now checking Modbus 3");
+  uint8_t result3;
+
+  ESP.wdtDisable();                                                           // Disable watchdog during modbus read or else ESP crashes when no slave connected
+  result3 = node3.readInputRegisters(0x0000, 10);
+  ESP.wdtEnable(1);                                                           // Enable watchdog during modbus read
+
+  if (result3 == node3.ku8MBSuccess)
+  {
+    voltage_usage_3      = (node3.getResponseBuffer(0x00) / 10.0f);
+    current_usage_3      = (node3.getResponseBuffer(0x01) / 1000.000f);
+    active_power_3       = (node3.getResponseBuffer(0x03) / 10.0f);
+    active_energy_3      = (node3.getResponseBuffer(0x05) / 1000.0f);
+    frequency_3          = (node3.getResponseBuffer(0x07) / 10.0f);
+    power_factor_3       = (node3.getResponseBuffer(0x08) / 100.0f);
+    over_power_alarm_3   = (node3.getResponseBuffer(0x09));
+
+    Serial.println("Modbus 3 Data");
+    Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_3);       // V
+    Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_3, 3);    // A
+    Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_3);        // W
+    Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_3, 3);    // kWh
+    Serial.print("FREQUENCY:         ");   Serial.println(frequency_3);           // Hz
+    Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
+    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
+    Serial.println("====================================================");
+  }
+  else {
+    Serial.println("Failed to read modbus 3");
   }
 }
 
@@ -337,7 +391,7 @@ void setup()
 
   node1.begin(pzemSlave1Addr, pzemSerial);
   node2.begin(pzemSlave2Addr, pzemSerial);
-
+  node3.begin(pzemSlave3Addr, pzemSerial);
 
   /*********************************************************************************************\
       Change PZEM address
@@ -351,10 +405,16 @@ void setup()
       Use this with one slave ONLY in the network.
       This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
       works.
+     1. Connect only one PZEM device to nodemcu and powerup your PZEM
+     2. uncomment the changeAddress function below i.e., changeAddress(OldAddress, Newaddress)
+     3. change the Newaddress value to some other value. Ex: 0x01, 0x02, 0xF7 etc.,
+     4. upload the program to nodemcu 
+     5. if you see "Changing Slave Address" on serial monitor, then it successfully changed address 
+     6. if you don't see that message, then click on RESET button on nodemcu
   */
 
 
-  //changeAddress(0x01, 0x02);                 // uncomment to set pzem address
+  //changeAddress(0XF8, 0x02);                 // uncomment to set pzem address
 
 
   /*********************************************************************************************\
@@ -412,6 +472,7 @@ void checktime()                                          // Function to check t
     oldTime = millis();
     pzemdevice1();
     pzemdevice2();
+    pzemdevice3();
   }
 }
 
