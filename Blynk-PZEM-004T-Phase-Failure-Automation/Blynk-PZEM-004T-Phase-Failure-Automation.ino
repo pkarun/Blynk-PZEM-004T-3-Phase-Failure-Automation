@@ -101,6 +101,91 @@ int relay4State             = LOW;
 //int pushButton4State        = HIGH;
 
 
+void setup()
+{
+  Serial.begin(115200);
+  pzemSerial.begin(9600);
+
+  /* start Modbus/RS-485 serial communication */
+
+  node1.begin(pzemSlave1Addr, pzemSerial);
+  node2.begin(pzemSlave2Addr, pzemSerial);
+  node3.begin(pzemSlave3Addr, pzemSerial);
+
+  /*********************************************************************************************\
+      Change PZEM address
+  \*********************************************************************************************/
+
+  /*
+      changeAddress(OldAddress, Newaddress)
+      By Uncomment the function in the below line you can change the slave address from one of the nodes (pzem device),
+      only need to be done ones. Preverable do this only with 1 slave in the network.
+      If you forgot or don't know the new address anymore, you can use the broadcast address 0XF8 as OldAddress to change the slave address.
+      Use this with one slave ONLY in the network.
+      This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
+      works.
+     1. Connect only one PZEM device to nodemcu and powerup your PZEM
+     2. uncomment the changeAddress function below i.e., changeAddress(OldAddress, Newaddress)
+     3. change the Newaddress value to some other value. Ex: 0x01, 0x02, 0xF7 etc.,
+     4. upload the program to nodemcu 
+     5. if you see "Changing Slave Address" on serial monitor, then it successfully changed address 
+     6. if you don't see that message, then click on RESET button on nodemcu
+  */
+
+
+// changeAddress(0XF8, 0x02);                 // uncomment to set pzem address
+
+
+  /*********************************************************************************************\
+      RESET PZEM Energy
+  \*********************************************************************************************/
+
+  /*
+        By Uncomment the function in the below line you can reset the energy counter (Wh) back to zero from one of the slaves.
+        resetEnergy(pzemSlaveAddr);
+  */
+
+
+  //resetEnergy(0x01);                        // uncomment to reset pzem energy
+
+
+
+#if defined(USE_LOCAL_SERVER)
+  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS, SERVER, PORT);
+#else
+  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS);
+#endif
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
+  ArduinoOTA.begin();
+
+
+  /*********************************************************************************************\
+      RELAY code
+  \*********************************************************************************************/
+
+  pinMode(RELAY_PIN_1, OUTPUT);
+  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
+  digitalWrite(RELAY_PIN_1, relay1State);
+
+
+  pinMode(RELAY_PIN_2, OUTPUT);
+  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
+  digitalWrite(RELAY_PIN_2, relay2State);
+
+  pinMode(RELAY_PIN_3, OUTPUT);
+  //  pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
+  digitalWrite(RELAY_PIN_3, relay3State);
+
+  pinMode(RELAY_PIN_4, OUTPUT);
+  //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
+  digitalWrite(RELAY_PIN_4, relay4State);
+
+  timer.setInterval(500L, checkPhysicalButton);           // Setup a Relay function to be called every 100 ms
+  timer.setInterval(1000L, sendtoBlynk);                  // Send PZEM values blynk server every 10 sec
+
+}
+
+
 void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
 {
   Blynk.virtualWrite(vPIN_VOLTAGE_1,               voltage_usage_1);
@@ -264,13 +349,23 @@ void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                  
   Serial.println("Changing Slave Address");
 
   pzemSerial.write(OldslaveAddr);
+  
+  
   pzemSerial.write(SlaveParameter);
   pzemSerial.write(highByte(registerAddress));
   pzemSerial.write(lowByte(registerAddress));
+
+  
   pzemSerial.write(highByte(NewslaveAddr));
   pzemSerial.write(lowByte(NewslaveAddr));
+
+   
+  
   pzemSerial.write(lowByte(u16CRC));
   pzemSerial.write(highByte(u16CRC));
+
+  Serial.println("Changing Slave Address is done"); 
+  
   delay(1000);
 }
 
@@ -382,96 +477,19 @@ void checkPhysicalButton()                                  // Here we are going
   //  }
 }
 
-void setup()
-{
-  Serial.begin(115200);
-  pzemSerial.begin(9600);
-
-  /* start Modbus/RS-485 serial communication */
-
-  node1.begin(pzemSlave1Addr, pzemSerial);
-  node2.begin(pzemSlave2Addr, pzemSerial);
-  node3.begin(pzemSlave3Addr, pzemSerial);
-
-  /*********************************************************************************************\
-      Change PZEM address
-  \*********************************************************************************************/
-
-  /*
-      changeAddress(OldAddress, Newaddress)
-      By Uncomment the function in the below line you can change the slave address from one of the nodes (pzem device),
-      only need to be done ones. Preverable do this only with 1 slave in the network.
-      If you forgot or don't know the new address anymore, you can use the broadcast address 0XF8 as OldAddress to change the slave address.
-      Use this with one slave ONLY in the network.
-      This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
-      works.
-     1. Connect only one PZEM device to nodemcu and powerup your PZEM
-     2. uncomment the changeAddress function below i.e., changeAddress(OldAddress, Newaddress)
-     3. change the Newaddress value to some other value. Ex: 0x01, 0x02, 0xF7 etc.,
-     4. upload the program to nodemcu 
-     5. if you see "Changing Slave Address" on serial monitor, then it successfully changed address 
-     6. if you don't see that message, then click on RESET button on nodemcu
-  */
-
-
-  //changeAddress(0XF8, 0x02);                 // uncomment to set pzem address
-
-
-  /*********************************************************************************************\
-      RESET PZEM Energy
-  \*********************************************************************************************/
-
-  /*
-        By Uncomment the function in the below line you can reset the energy counter (Wh) back to zero from one of the slaves.
-        resetEnergy(pzemSlaveAddr);
-  */
-
-
-  //resetEnergy(0x01);                        // uncomment to reset pzem energy
-
-
-
-#if defined(USE_LOCAL_SERVER)
-  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS, SERVER, PORT);
-#else
-  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS);
-#endif
-  ArduinoOTA.setHostname(OTA_HOSTNAME);
-  ArduinoOTA.begin();
-
-
-  /*********************************************************************************************\
-      RELAY code
-  \*********************************************************************************************/
-
-  pinMode(RELAY_PIN_1, OUTPUT);
-  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_1, relay1State);
-
-
-  pinMode(RELAY_PIN_2, OUTPUT);
-  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_2, relay2State);
-
-  pinMode(RELAY_PIN_3, OUTPUT);
-  //  pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_3, relay3State);
-
-  pinMode(RELAY_PIN_4, OUTPUT);
-  //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_4, relay4State);
-
-  timer.setInterval(500L, checkPhysicalButton);           // Setup a Relay function to be called every 100 ms
-  timer.setInterval(1000L, sendtoBlynk);                  // Send PZEM values blynk server every 10 sec
-
-}
 
 void checktime()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
 {
     if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME){               
     oldTime = millis();
+    
+     
     pzemdevice1();
+    
+     
     pzemdevice2();
+
+    
     pzemdevice3();
   }
 }
