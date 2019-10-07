@@ -3,8 +3,6 @@
 /////////////////////////////////////////////////////////////////
 
 
-
-
 /***************************************************
           NodeMCU Pin Assignment
  **************************************************/
@@ -86,29 +84,7 @@
 #define vPIN_OVER_POWER_ALARM_3       V37
 
 /***************************************************
-         Blynk Settings
- **************************************************/
-
-#define AUTH "Your Blynk Auth Token"                            // You should get Auth Token in the Blynk App.  
-
-
-/***************************************************
-          WiFi Settings
- **************************************************/
-
-#define WIFI_SSID "Your WiFi Network Name"                                    
-#define WIFI_PASS "Your Wifi Password"                                   
-
-
-/***************************************************
           Server Settings
  **************************************************/
 
-#define OTA_HOSTNAME "3 Phase Failure Automation"               // OTA name
-
-/* Remove or comment-out below 2 lines when use Blynk hosted server */
-
-#define USE_LOCAL_SERVER                                        // Use local Blynk Server - comment-out if use Blynk hosted cloud service
-#define SERVER "xxx.xxx.xx.xxx"                                 // Comment-out if use Blynk hosted cloud service
-
-#define PORT 8080
+#define OTA_HOSTNAME "3 Phase Failure Automation"            // OTA name
