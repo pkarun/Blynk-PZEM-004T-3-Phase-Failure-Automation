@@ -6,6 +6,7 @@ Blynk PZEM 004T 3 Phase failure motor automation.
 2) Monitors 3 PZEM 004T v3.0 device data with one ESP8266 device (multiple salve)</br> 
 3) Auto Mode ON/OFF - With Auto Mode ON, it turn ON Relay 1 and Relay 2 if it meets all 3 Phase voltage reaches minimum voltage value, if any those condition don't satisify it won't turn on</br> 
 4) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 and Relay 2</br>
+5) Show sum of voltage, current usage, active power, active energy, frequency and power factor</br>
 
 <h2>Requirements</h2>
 1) <a href ="http://s.click.aliexpress.com/e/ElytDjIu">3 PZEM-004T v3.0</a></br> 
@@ -61,6 +62,8 @@ GND to GND</br>
 <img src="/images/pzem-004t-3-phase-failure-automation-screenshot-1.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" width="350" height="" style="max-width:100%;">
 
 <img src="/images/pzem-004t-3-phase-failure-automation-screenshot-2.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" width="350" height="" style="max-width:100%;">
+
+<img src="/images/pzem-004t-3-phase-failure-automation-screenshot-3.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" width="350" height="" style="max-width:100%;">
 
 <h2>Scan QR Code on Blynk App</h2>
 

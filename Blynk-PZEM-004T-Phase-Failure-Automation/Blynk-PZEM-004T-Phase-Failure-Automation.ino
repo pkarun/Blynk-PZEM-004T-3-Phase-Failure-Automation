@@ -30,8 +30,8 @@
 //#define BLYNK_PRINT Serial        // Uncomment for debugging 
 
 #include "settings.h"           
-//#include "secret.h"               // UNCOMMENT this before you use and change values on config.h tab
-#include "my_secret.h"              // COMMENT-OUT or remove this line before you use. This is my personal settings.
+//#include "secret.h"               // <<--- UNCOMMENT this before you use and change values on config.h tab
+#include "my_secret.h"              // <<--- COMMENT-OUT or REMOVE this line before you use. This is my personal settings.
 
 #include <ArduinoOTA.h>
 #include <BlynkSimpleEsp8266.h>
@@ -84,6 +84,13 @@ double active_energy_3      = 0;
 double frequency_3          = 0;
 double power_factor_3       = 0;
 double over_power_alarm_3   = 0;
+
+double sum_of_voltage       = 0;
+double sum_of_current       = 0;
+double sum_of_power         = 0;
+double sum_of_active_energy = 0;
+double sum_of_frequency     = 0;
+double sum_of_power_factor  = 0;
 
 /* Relay */
 
@@ -210,7 +217,14 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_FREQUENCY_3,             frequency_3);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_3,          power_factor_3);
   Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_3,      over_power_alarm_3);
-}
+
+  Blynk.virtualWrite(vPIN_SUM_VOLTAGE,             sum_of_voltage);
+  Blynk.virtualWrite(vPIN_SUM_CURRENT_USAGE,       sum_of_current);
+  Blynk.virtualWrite(vPIN_SUM_ACTIVE_POWER,        sum_of_power);
+  Blynk.virtualWrite(vPIN_SUM_ACTIVE_ENERGY,       sum_of_active_energy);
+  Blynk.virtualWrite(vPIN_SUM_FREQUENCY,           sum_of_frequency);
+  Blynk.virtualWrite(vPIN_SUM_POWER_FACTOR,        sum_of_power_factor);
+  }
 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
 {
@@ -367,6 +381,24 @@ void pzemdevice3()                                                            //
   }
 }
 
+void sumofpzem()
+{
+    Serial.println("Sum of all 3 PZEM devices");
+    sum_of_voltage        =   (voltage_usage_1 + voltage_usage_2 + voltage_usage_3);
+    sum_of_current        =   (current_usage_1 + current_usage_2 + current_usage_3);
+    sum_of_power          =   (active_power_1 + active_power_2 + active_power_3);
+    sum_of_active_energy  =   (active_energy_1 + active_energy_2 + active_energy_3); 
+    sum_of_frequency      =   (frequency_1 + frequency_2 + frequency_3);
+    sum_of_power_factor   =   (power_factor_1 + power_factor_2 + power_factor_3); 
+    
+    Serial.print("SUM of VOLTAGE:           ");   Serial.println(sum_of_voltage);             // V
+    Serial.print("SUM of CURRENT_USAGE:     ");   Serial.println(sum_of_current, 3);          // A
+    Serial.print("SUM of ACTIVE_POWER:      ");   Serial.println(sum_of_power);               // W
+    Serial.print("SUM of ACTIVE_ENERGY:     ");   Serial.println(sum_of_active_energy, 3);    // kWh
+    Serial.print("SUM of FREQUENCY:         ");   Serial.println(sum_of_frequency);           // Hz
+    Serial.print("SUM of POWER_FACTOR:      ");   Serial.println(sum_of_power_factor);
+    Serial.println("====================================================");
+}
 void resetEnergy(uint8_t slaveAddr)                                                // Function to reset energy value on PZEM device.
 {
   /* The command to reset the slave's energy is (total 4 bytes):
@@ -525,6 +557,7 @@ void checktime()                                          // Function to check t
     pzemdevice1(); 
     pzemdevice2();
     pzemdevice3();
+    sumofpzem();
   }
 }
 

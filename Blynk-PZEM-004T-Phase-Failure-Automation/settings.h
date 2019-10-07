@@ -83,6 +83,13 @@
 #define vPIN_POWER_FACTOR_3           V36
 #define vPIN_OVER_POWER_ALARM_3       V37
 
+#define vPIN_SUM_VOLTAGE              V41
+#define vPIN_SUM_CURRENT_USAGE        V42
+#define vPIN_SUM_ACTIVE_POWER         V43
+#define vPIN_SUM_ACTIVE_ENERGY        V44
+#define vPIN_SUM_FREQUENCY            V45
+#define vPIN_SUM_POWER_FACTOR         V46
+
 /***************************************************
           Server Settings
  **************************************************/
