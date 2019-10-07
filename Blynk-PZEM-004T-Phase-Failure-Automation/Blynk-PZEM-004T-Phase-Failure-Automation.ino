@@ -94,10 +94,10 @@ int relay2State             = HIGH;
 int pushButton2State        = HIGH;
 
 int relay3State             = HIGH;
-//int pushButton3State        = HIGH;
+//int pushButton3State      = HIGH;
 
 int relay4State             = HIGH;
-//int pushButton4State        = HIGH;
+//int pushButton4State      = HIGH;
 
 int auto_mode_state_1       = HIGH;
 
