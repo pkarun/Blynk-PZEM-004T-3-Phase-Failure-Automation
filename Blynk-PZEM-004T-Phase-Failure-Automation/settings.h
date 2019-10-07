@@ -31,12 +31,20 @@
  **************************************************/
 
 #define PZEM_SLAVE_1_ADDRESS     0x01                       // Make sure you assign address to pzem first before you use
-#define PZEM_SLAVE_2_ADDRESS     0x02
-#define PZEM_SLAVE_3_ADDRESS     0x03
+#define PZEM_SLAVE_2_ADDRESS     0xF7
+#define PZEM_SLAVE_3_ADDRESS     0x02
 
 /* PZEM how often you wish to get PZEM data */
 
-#define PZEM_DATA_RETRIVAL_TIME  10000                      // Enter time in milliseconds 
+#define PZEM_DATA_RETRIVAL_TIME  500                       // Enter time in milliseconds 
+
+/***************************************************
+          variable value assignment
+ **************************************************/
+
+#define VOLTAGE_1_CUTOFF        180                        // voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define VOLTAGE_2_CUTOFF        180
+#define VOLTAGE_3_CUTOFF        180
 
 /***************************************************
           Blynk Virtual Pin Assignment
@@ -79,15 +87,15 @@
          Blynk Settings
  **************************************************/
 
-#define AUTH "Your Blynk Auth Token"                            // You should get Auth Token in the Blynk App. 
+#define AUTH "Your Blynk Auth Token"                            // You should get Auth Token in the Blynk App.  
 
 
 /***************************************************
           WiFi Settings
  **************************************************/
 
-#define WIFI_SSID "Your WiFi Network Name"                      
-#define WIFI_PASS "9448873197"                                  
+#define WIFI_SSID "Your WiFi Network Name"                                    
+#define WIFI_PASS "Your Wifi Password"                                   
 
 
 /***************************************************

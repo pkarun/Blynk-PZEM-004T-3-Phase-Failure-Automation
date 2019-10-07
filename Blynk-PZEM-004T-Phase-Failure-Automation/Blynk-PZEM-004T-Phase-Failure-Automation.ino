@@ -1,7 +1,10 @@
 /*
    Blynk PZEM 004T v3.0 - 3 Phase Failure Motor Automation
 
-   Source: https://github.com/pkarun/Blynk-PZEM-004T-v3.0-Multiple-device
+   Source:
+   
+   https://github.com/pkarun/Blynk-PZEM-004T-3-Phase-Failure-Automation
+   https://github.com/pkarun/Blynk-PZEM-004T-v3.0-Multiple-device
    https://github.com/pkarun/Blynk-PZEM-004T-v3.0
 
    Reference:
@@ -43,10 +46,8 @@ SoftwareSerial pzemSerial(RX_PIN_NODEMCU, TX_PIN_NODEMCU);    //(RX,TX) NodeMCU 
 
 /*
     This is the address of Pzem devices on the network. Each pzem device has to set unique
-    address when we are working with muliple pzem device (multiple modbus devices/multiple slaves)
-    You can use the changeAddress(OldAddress, Newaddress) function below in the code to assign new
-    address to each pzem device first time.
-
+    address when we are working with muliple pzem device (multiple modbus devices/multiple slaves).
+    For changing/assigning address to pzem device, goto setup() function. 
 */
 
 static uint8_t pzemSlave1Addr = PZEM_SLAVE_1_ADDRESS;
@@ -125,11 +126,13 @@ void setup()
       This is the first step you have to do when connecting muliple pzem devices. If you haven't set the pzem address, then this program won't
       works.
      1. Connect only one PZEM device to nodemcu and powerup your PZEM
-     2. uncomment the changeAddress function below i.e., changeAddress(OldAddress, Newaddress)
+     2. uncomment the changeAddress function call below i.e., changeAddress(OldAddress, Newaddress)
      3. change the Newaddress value to some other value. Ex: 0x01, 0x02, 0xF7 etc.,
-     4. upload the program to nodemcu 
+     4. upload this program to nodemcu 
      5. if you see "Changing Slave Address" on serial monitor, then it successfully changed address 
      6. if you don't see that message, then click on RESET button on nodemcu
+     7. Once this done you have successfully assigned address to pzem device.
+     8. do the same steps for as many devices as you want. 
   */
 
 
@@ -146,8 +149,7 @@ void setup()
   */
 
 
-  //resetEnergy(0x01);                        // uncomment to reset pzem energy
-
+// resetEnergy(0x01);                        // uncomment to reset pzem energy
 
 
 #if defined(USE_LOCAL_SERVER)
@@ -182,9 +184,7 @@ void setup()
 
   timer.setInterval(500L, checkPhysicalButton);           // Setup a Relay function to be called every 100 ms
   timer.setInterval(1000L, sendtoBlynk);                  // Send PZEM values blynk server every 10 sec
-
 }
-
 
 void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
 {
@@ -216,7 +216,7 @@ void sendtoBlynk()                                                           // 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
 {
   Serial.println("====================================================");     // PZEM Device 1 data fetching code starts here
-  Serial.println("Now checking Modbus 1");
+  Serial.println("Now checking PZEM Device 1");
   uint8_t result1;
 
   ESP.wdtDisable();                                                           // Disable watchdog during modbus read or else ESP crashes when no slave connected
@@ -233,7 +233,6 @@ void pzemdevice1()                                                            //
     power_factor_1       = (node1.getResponseBuffer(0x08) / 100.0f);
     over_power_alarm_1   = (node1.getResponseBuffer(0x09));
 
-    Serial.println("Modbus 1 Data");
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_1);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_1, 3);    // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_1);        // W
@@ -244,14 +243,31 @@ void pzemdevice1()                                                            //
     Serial.println("====================================================");
   }
   else {
-    Serial.println("Failed to read modbus 1");
+    Serial.println("Failed to read PZEM Device 1");
+    Serial.println("PZEM Device 1 Data");
+    voltage_usage_1      = 0;
+    current_usage_1      = 0;
+    active_power_1       = 0;
+    active_energy_1      = 0;
+    frequency_1          = 0;
+    power_factor_1       = 0;
+    over_power_alarm_1   = 0;
+    Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_1);       // V
+    Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_1, 3);    // A
+    Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_1);        // W
+    Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_1, 3);    // kWh
+    Serial.print("FREQUENCY:         ");   Serial.println(frequency_1);           // Hz
+    Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_1);
+    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_1, 0);
+    Serial.println("====================================================");
+    swith_off();                                                                  // Calling swith_off() to turn off relays
   }
 }
 
-void pzemdevice2()                                                             // Function to get PZEM device 2 data
+void pzemdevice2()                                                                // Function to get PZEM device 2 data
 {
   Serial.println("====================================================");
-  Serial.println("Now checking Modbus 2");
+  Serial.println("Now checking PZEM Device 2");
   uint8_t result2;
 
   ESP.wdtDisable();
@@ -268,7 +284,6 @@ void pzemdevice2()                                                             /
     power_factor_2       = (node2.getResponseBuffer(0x08) / 100.0f);
     over_power_alarm_2   = (node2.getResponseBuffer(0x09));
 
-    Serial.println("Modbus 2 Data");
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_2);         // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_2, 3);      // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_2);          // W
@@ -277,16 +292,34 @@ void pzemdevice2()                                                             /
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
+    
   }
-  else {
-    Serial.println("Failed to read modbus 2");
+    else {
+    Serial.println("Failed to read PZEM Device 2");
+    Serial.println("PZEM Device 2 Data");
+    voltage_usage_2      = 0;
+    current_usage_2      = 0;
+    active_power_2       = 0;
+    active_energy_2      = 0;
+    frequency_2          = 0;
+    power_factor_2       = 0;
+    over_power_alarm_2   = 0;
+    Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_2);         // V
+    Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_2, 3);      // A
+    Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_2);          // W
+    Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_2, 3);      // kWh
+    Serial.print("FREQUENCY:         ");   Serial.println(frequency_2);             // Hz
+    Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
+    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
+    Serial.println("====================================================");
+    swith_off(); 
   }
 }
 
 void pzemdevice3()                                                            // Function to get PZEM device 1 data
 {
   Serial.println("====================================================");     // PZEM Device 1 data fetching code starts here
-  Serial.println("Now checking Modbus 3");
+  Serial.println("Now checking PZEM Device 3");
   uint8_t result3;
 
   ESP.wdtDisable();                                                           // Disable watchdog during modbus read or else ESP crashes when no slave connected
@@ -303,7 +336,6 @@ void pzemdevice3()                                                            //
     power_factor_3       = (node3.getResponseBuffer(0x08) / 100.0f);
     over_power_alarm_3   = (node3.getResponseBuffer(0x09));
 
-    Serial.println("Modbus 3 Data");
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_3);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_3, 3);    // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_3);        // W
@@ -312,13 +344,31 @@ void pzemdevice3()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
     Serial.println("====================================================");
+    
   }
   else {
-    Serial.println("Failed to read modbus 3");
+    Serial.println("Failed to read PZEM Device 3");
+    Serial.println("PZEM Device 3 Data");
+    voltage_usage_3      = 0;                                                     // Assigning 0 if it fails to read PZEM device
+    current_usage_3      = 0;
+    active_power_3       = 0;
+    active_energy_3      = 0;
+    frequency_3          = 0;
+    power_factor_3       = 0;
+    over_power_alarm_3   = 0;
+    Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_3);       // V
+    Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_3, 3);    // A
+    Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_3);        // W
+    Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_3, 3);    // kWh
+    Serial.print("FREQUENCY:         ");   Serial.println(frequency_3);           // Hz
+    Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
+    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
+    Serial.println("====================================================");
+    swith_off();
   }
 }
 
-void resetEnergy(uint8_t slaveAddr)                                                 // Function to reset energy value on PZEM device.
+void resetEnergy(uint8_t slaveAddr)                                                // Function to reset energy value on PZEM device.
 {
   /* The command to reset the slave's energy is (total 4 bytes):
      Slave address + 0x42 + CRC check high byte + CRC check low byte. */
@@ -345,27 +395,16 @@ void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                  
   u16CRC = crc16_update(u16CRC, lowByte(registerAddress));
   u16CRC = crc16_update(u16CRC, highByte(NewslaveAddr));
   u16CRC = crc16_update(u16CRC, lowByte(NewslaveAddr));
-
   Serial.println("Changing Slave Address");
-
   pzemSerial.write(OldslaveAddr);
-  
-  
   pzemSerial.write(SlaveParameter);
   pzemSerial.write(highByte(registerAddress));
   pzemSerial.write(lowByte(registerAddress));
-
-  
   pzemSerial.write(highByte(NewslaveAddr));
   pzemSerial.write(lowByte(NewslaveAddr));
-
-   
-  
   pzemSerial.write(lowByte(u16CRC));
   pzemSerial.write(highByte(u16CRC));
-
   Serial.println("Changing Slave Address is done"); 
-  
   delay(1000);
 }
 
@@ -413,7 +452,7 @@ void checkPhysicalButton()                                  // Here we are going
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
     // pushButton1State is used to avoid sequential toggles
     if (pushButton1State != LOW) {
-
+      
       // Toggle Relay state
       relay1State = !relay1State;
       digitalWrite(RELAY_PIN_1, relay1State);
@@ -477,20 +516,29 @@ void checkPhysicalButton()                                  // Here we are going
   //  }
 }
 
-
 void checktime()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
 {
     if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME){               
     oldTime = millis();
-    
-     
-    pzemdevice1();
-    
-     
+    pzemdevice1(); 
     pzemdevice2();
-
-    
     pzemdevice3();
+  }
+}
+
+void swith_off()                                        // Function to check if voltage low condition occurs if occurs, switch off relays
+{
+  if(voltage_usage_1 < VOLTAGE_1_CUTOFF || voltage_usage_2 < VOLTAGE_2_CUTOFF || voltage_usage_3 < VOLTAGE_3_CUTOFF){
+    Serial.println("Low Voltage is detected!....");
+    Serial.println("Switching off relay now..");
+
+    Serial.println("Relay 1 OFF..");
+    digitalWrite(RELAY_PIN_1, HIGH);
+    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);
+    
+    Serial.println("Relay 2 OFF..");
+    digitalWrite(RELAY_PIN_2, HIGH);
+    Blynk.virtualWrite(VPIN_BUTTON_2, HIGH);
   }
 }
 
@@ -499,5 +547,5 @@ void loop()
   Blynk.run();
   ArduinoOTA.handle();                                    // For OTA
   timer.run();
-  checktime();
+  checktime();  
 }
