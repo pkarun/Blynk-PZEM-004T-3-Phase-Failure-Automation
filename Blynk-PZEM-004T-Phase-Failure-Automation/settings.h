@@ -36,13 +36,13 @@
 
 /* PZEM how often you wish to get PZEM data */
 
-#define PZEM_DATA_RETRIVAL_TIME  500                       // Enter time in milliseconds 
+#define PZEM_DATA_RETRIVAL_TIME  1000                       // Enter time in milliseconds 
 
 /***************************************************
           variable value assignment
  **************************************************/
 
-#define VOLTAGE_1_CUTOFF        180                        // voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define VOLTAGE_1_CUTOFF        180                         // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
 #define VOLTAGE_2_CUTOFF        180
 #define VOLTAGE_3_CUTOFF        180
 
@@ -56,6 +56,8 @@
 #define VPIN_BUTTON_2                 V2
 #define VPIN_BUTTON_3                 V3
 #define VPIN_BUTTON_4                 V4
+
+#define VPIN_AUTO_MODE_BUTTON_1       V5                     // This button is to switch on motor in auto mode
 
 /* Blynk Labeled Value vpin */
 

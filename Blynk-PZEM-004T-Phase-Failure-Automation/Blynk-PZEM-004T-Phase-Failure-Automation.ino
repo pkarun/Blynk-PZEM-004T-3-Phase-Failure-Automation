@@ -27,11 +27,10 @@
 
 */
 
-//#define BLYNK_PRINT Serial
+//#define BLYNK_PRINT Serial      // Uncomment for debugging 
 
 //#include "settings.h"           // Make sure you UNCOMMENT this before you use.
 #include "my_settings.h"          // This is my personal settings. You can remove this line or comment-out when you are using.
-
 
 
 #include <ArduinoOTA.h>
@@ -59,7 +58,6 @@ unsigned long oldTime = 0;
 ModbusMaster node1;
 ModbusMaster node2;
 ModbusMaster node3;
-
 
 BlynkTimer timer;
 
@@ -89,18 +87,19 @@ double over_power_alarm_3   = 0;
 
 /* Relay */
 
-int relay1State             = LOW;
+int relay1State             = HIGH;                 // When power is back, keep relays in OFF condition HIGH is LOW in nodemcu
 int pushButton1State        = HIGH;
 
-int relay2State             = LOW;
+int relay2State             = HIGH;
 int pushButton2State        = HIGH;
 
-int relay3State             = LOW;
+int relay3State             = HIGH;
 //int pushButton3State        = HIGH;
 
-int relay4State             = LOW;
+int relay4State             = HIGH;
 //int pushButton4State        = HIGH;
 
+int auto_mode_state_1       = HIGH;
 
 void setup()
 {
@@ -418,6 +417,7 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_2);
   Blynk.syncVirtual(VPIN_BUTTON_3);
   Blynk.syncVirtual(VPIN_BUTTON_4);
+  Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
 
   /*  Alternatively, you could override server state using:
     Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
@@ -429,8 +429,7 @@ BLYNK_CONNECTED() {                                           // Every time we c
 
 /* When App button is pushed - switch the state */
 
-BLYNK_WRITE(VPIN_BUTTON_1) {
-  Serial.println("Button 1 pressed on blynk app");
+BLYNK_WRITE(VPIN_BUTTON_1) {  
   relay1State = param.asInt();
   digitalWrite(RELAY_PIN_1, relay1State);
 }
@@ -446,7 +445,10 @@ BLYNK_WRITE(VPIN_BUTTON_4) {
   relay4State = param.asInt();
   digitalWrite(RELAY_PIN_4, relay4State);
 }
-
+BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
+  auto_mode_state_1 = param.asInt();
+}
+  
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
@@ -542,10 +544,28 @@ void swith_off()                                        // Function to check if 
   }
 }
 
+void switch_on()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
+{    
+  if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
+    Serial.println("All condition is TRUE...swtiching on relay now.");
+    
+    digitalWrite(RELAY_PIN_1, LOW);                  // Turn on relay 1 
+    Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON
+    Serial.println("RELAY 1 Turned ON");
+    
+    digitalWrite(RELAY_PIN_2, LOW);
+    Blynk.virtualWrite(VPIN_BUTTON_2, LOW);
+    Serial.println("RELAY 2 Turned ON");  
+  }
+  else{
+    Serial.println("Sorry... conditions FAILS to turn on RELAY");
+  }
+}
 void loop()
 {
   Blynk.run();
   ArduinoOTA.handle();                                    // For OTA
   timer.run();
-  checktime();  
+  checktime();
+  switch_on();  
 }
