@@ -21,8 +21,8 @@
 
    PZEM 004T v3.0 to NodeMCU
    5v to vin
-   RX to D6 (TX Pin)
-   TX to D5 (RX Pin)
+   RX to D6 (has TX Pin)
+   TX to D5 (has RX Pin)
    GND to GND
 
 */
@@ -30,8 +30,8 @@
 //#define BLYNK_PRINT Serial        // Uncomment for debugging 
 
 #include "settings.h"           
-//#include "config.h"               // UNCOMMENT this before you use and change values on config.h tab
-#include "my_config.h"              // COMMENT-OUT or remove this line before you use. This is my personal settings.
+//#include "secret.h"               // UNCOMMENT this before you use and change values on config.h tab
+#include "my_secret.h"              // COMMENT-OUT or remove this line before you use. This is my personal settings.
 
 #include <ArduinoOTA.h>
 #include <BlynkSimpleEsp8266.h>

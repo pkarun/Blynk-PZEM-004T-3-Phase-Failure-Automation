@@ -12,7 +12,7 @@
 
 /* Relay to NodeMCU Connection */
 
-#define RELAY_PIN_1           4                   // D2 or GPIO 4, 
+#define RELAY_PIN_1           4                   // D2 or GPIO 4
 #define RELAY_PIN_2           5                   // D1 or GPIO 5
 #define RELAY_PIN_3           2                   // D4 or GPIO 2
 #define RELAY_PIN_4           16                  // D0 or GPIO 16
@@ -40,9 +40,9 @@
           variable value assignment
  **************************************************/
 
-#define VOLTAGE_1_CUTOFF        180                         // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
-#define VOLTAGE_2_CUTOFF        180
-#define VOLTAGE_3_CUTOFF        180
+#define VOLTAGE_1_CUTOFF         180                        // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define VOLTAGE_2_CUTOFF         180
+#define VOLTAGE_3_CUTOFF         180
 
 /***************************************************
           Blynk Virtual Pin Assignment
