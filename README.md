@@ -64,4 +64,4 @@ GND to GND</br>
 
 <h2>Scan QR Code on Blynk App</h2>
 
-<img src="blynk-qr-code.png" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>
+<img src="/images/blynk-qr-code.png" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>
