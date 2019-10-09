@@ -27,7 +27,7 @@
 
 */
 
-//#define BLYNK_PRINT Serial        // Uncomment for debugging 
+#define BLYNK_PRINT Serial        // Uncomment for debugging 
 
 #include "settings.h"           
 //#include "secret.h"               // <<--- UNCOMMENT this before you use and change values on config.h tab
@@ -108,6 +108,9 @@ int relay4State             = HIGH;
 
 int auto_mode_state_1       = HIGH;
 
+int ReCnctFlag;               // Reconnection Flag
+int ReCnctCount = 0;          // Reconnection counter
+
 void setup()
 {
   Serial.begin(115200);
@@ -159,13 +162,18 @@ void setup()
 
 
 #if defined(USE_LOCAL_SERVER)
-  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS, SERVER, PORT);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASS);         // Non-blocking if no WiFi available
+  Blynk.config(AUTH, SERVER, PORT);
+  Blynk.connect();
 #else
-  Blynk.begin(AUTH, WIFI_SSID, WIFI_PASS);
-#endif
+  WiFi.begin(WIFI_SSID, WIFI_PASS);         // Non-blocking if no WiFi available
+  Blynk.config(AUTH);
+  Blynk.connect();
+#endif   
+  
   ArduinoOTA.setHostname(OTA_HOSTNAME);
   ArduinoOTA.begin();
-
 
   /*********************************************************************************************\
       RELAY code
@@ -188,9 +196,11 @@ void setup()
   //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
   digitalWrite(RELAY_PIN_4, relay4State);
 
-  timer.setInterval(500L, checkPhysicalButton);           // Setup a Relay function to be called every 100 ms
-  timer.setInterval(1000L, sendtoBlynk);                  // Send PZEM values blynk server every 10 sec
-}
+  timer.setInterval(GET_PZEM_DATA_TIME,       get_pzem_data);                   // How often you would like to call the function
+  timer.setInterval(AUTO_MODE_TIME,           auto_mode);    
+  timer.setInterval(PHYSICAL_BUTTON_TIME,     checkPhysicalButton);             // Setup a Relay function to be called every 100 ms
+  timer.setInterval(SEND_TO_BLYNK_TIME,       sendtoBlynk);                     // Send PZEM values blynk server every 10 sec
+} 
 
 void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
 {
@@ -444,7 +454,8 @@ void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                  
  **************************************************/
 
 BLYNK_CONNECTED() {                                           // Every time we connect to the cloud...
-
+  Serial.println("Blynk Connected");
+  ReCnctCount = 0;
   Blynk.syncVirtual(VPIN_BUTTON_1);                           // Request the latest state from the server
   Blynk.syncVirtual(VPIN_BUTTON_2);
   Blynk.syncVirtual(VPIN_BUTTON_3);
@@ -550,16 +561,13 @@ void checkPhysicalButton()                                  // Here we are going
   //  }
 }
 
-void checktime()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
+void get_pzem_data()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
 {
-    if ((millis() - oldTime) > PZEM_DATA_RETRIVAL_TIME){               
-    oldTime = millis();
     pzemdevice1(); 
     pzemdevice2();
     pzemdevice3();
     sumofpzem();
   }
-}
 
 void swith_off()                                        // Function to check if voltage low condition occurs if occurs, switch off relays
 {
@@ -577,7 +585,7 @@ void swith_off()                                        // Function to check if 
   }
 }
 
-void switch_on()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
+void auto_mode()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
 {    
   if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
     Serial.println("All condition is TRUE...swtiching on relay now.");
@@ -590,15 +598,25 @@ void switch_on()                                      // Function to check if au
     Blynk.virtualWrite(VPIN_BUTTON_2, LOW);
     Serial.println("RELAY 2 Turned ON");  
   }
-  else{
-    Serial.println("Sorry... conditions FAILS to turn on RELAY");
-  }
 }
+
 void loop()
 {
-  Blynk.run();
-  ArduinoOTA.handle();                                    // For OTA
+  ArduinoOTA.handle();                                                        // For OTA
   timer.run();
-  checktime();
-  switch_on();  
+
+  if (Blynk.connected()) {                                                    // If connected run as normal
+    Blynk.run();
+  } 
+  else if (ReCnctFlag == 0) {                                                 // If NOT connected and not already trying to reconnect, set timer to try to reconnect in 30 seconds
+      ReCnctFlag = 1;                                                         // Set reconnection Flag
+      Serial.println("Starting reconnection timer in 30 seconds...");
+      timer.setTimeout(30000L, []() {                                         // Lambda Reconnection Timer Function
+      ReCnctFlag = 0;                                                         // Reset reconnection Flag
+      ReCnctCount++;                                                          // Increment reconnection Counter
+      Serial.print("Attempting reconnection #");
+      Serial.println(ReCnctCount);
+      Blynk.connect();                                                        // Try to reconnect to the server
+    });                                                                       // END Timer Function
+    }
 }

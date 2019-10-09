@@ -32,15 +32,20 @@
 #define PZEM_SLAVE_2_ADDRESS     0xF7
 #define PZEM_SLAVE_3_ADDRESS     0x02
 
-/* PZEM how often you wish to get PZEM data */
+/***************************************************
+How often you would like to call function? Enter time in milliseconds  
+ **************************************************/
 
-#define PZEM_DATA_RETRIVAL_TIME  1000                       // Enter time in milliseconds 
+#define GET_PZEM_DATA_TIME          1000L                       // How often you wish to get PZEM data. Enter time in milliseconds 
+#define SEND_TO_BLYNK_TIME          1000L                       // How often you would like to send data to blynk app. Enter time in milliseconds  
+#define AUTO_MODE_TIME              20000L
+#define PHYSICAL_BUTTON_TIME        500L
 
 /***************************************************
           variable value assignment
  **************************************************/
 
-#define VOLTAGE_1_CUTOFF         180                        // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define VOLTAGE_1_CUTOFF         180                           // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
 #define VOLTAGE_2_CUTOFF         180
 #define VOLTAGE_3_CUTOFF         180
 
