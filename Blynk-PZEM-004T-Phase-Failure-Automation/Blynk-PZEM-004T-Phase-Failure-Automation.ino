@@ -39,8 +39,11 @@
 #include <ModbusMaster.h>
 #include <ESP8266WiFi.h>
 
-
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h> 
+ 
 #include <SoftwareSerial.h>                                   //(NODEMCU ESP8266)
+
 SoftwareSerial pzemSerial(RX_PIN_NODEMCU, TX_PIN_NODEMCU);    //(RX,TX) NodeMCU connect to (TX,RX) of PZEM
 
 /*
@@ -110,6 +113,8 @@ int auto_mode_state_1       = HIGH;
 
 int ReCnctFlag;               // Reconnection Flag
 int ReCnctCount = 0;          // Reconnection counter
+
+int firmwarestate = HIGH;     // Used for firmware update process
 
 void setup()
 {
@@ -200,7 +205,7 @@ void setup()
   timer.setInterval(AUTO_MODE_TIME,           auto_mode);    
   timer.setInterval(PHYSICAL_BUTTON_TIME,     checkPhysicalButton);             // Setup a Relay function to be called every 100 ms
   timer.setInterval(SEND_TO_BLYNK_TIME,       sendtoBlynk);                     // Send PZEM values blynk server every 10 sec
-} 
+ } 
 
 void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
 {
@@ -234,7 +239,9 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_SUM_ACTIVE_ENERGY,       sum_of_active_energy);
   Blynk.virtualWrite(vPIN_SUM_FREQUENCY,           sum_of_frequency);
   Blynk.virtualWrite(vPIN_SUM_POWER_FACTOR,        sum_of_power_factor);
-  }
+
+  Blynk.virtualWrite(VPIN_FIRMWARE_VERSION,        FIRMWARE_VERSION);  
+}
 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
 {
@@ -461,13 +468,9 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_3);
   Blynk.syncVirtual(VPIN_BUTTON_4);
   Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
-
-  /*  Alternatively, you could override server state using:
-    Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
-    Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
-    Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
-    Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
-  */
+  
+  Blynk.virtualWrite(VPIN_UPDATE_LED,         0);             // Turn off FOTA Led
+  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app
 }
 
 /* When App button is pushed - switch the state */
@@ -490,6 +493,12 @@ BLYNK_WRITE(VPIN_BUTTON_4) {
 }
 BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
   auto_mode_state_1 = param.asInt();
+}
+BLYNK_WRITE(VPIN_FIRMWARE_UPDATE) {                         // Get update button enabled or not
+  firmwarestate = param.asInt();  
+  if(firmwarestate == LOW){
+    checkforupdate();
+     }
 }
   
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
@@ -567,7 +576,7 @@ void get_pzem_data()                                          // Function to che
     pzemdevice2();
     pzemdevice3();
     sumofpzem();
-  }
+}
 
 void swith_off()                                        // Function to check if voltage low condition occurs if occurs, switch off relays
 {
@@ -598,6 +607,43 @@ void auto_mode()                                      // Function to check if au
     Blynk.virtualWrite(VPIN_BUTTON_2, LOW);
     Serial.println("RELAY 2 Turned ON");  
   }
+}
+  
+void checkforupdate()
+{ 
+  Serial.println( "OTA Update Request Received" );
+  Serial.print( "Firmware URL: " );
+  Serial.println( FIRMWARE_URL );
+
+  HTTPClient httpClient;
+  httpClient.begin( FIRMWARE_URL );
+  int httpCode = httpClient.GET();
+  if( httpCode == 200 ) {
+  Serial.println( "Update file found, starting update" );
+  Blynk.virtualWrite(VPIN_UPDATE_LED, 1023);
+  
+  t_httpUpdate_return ret = ESPhttpUpdate.update( FIRMWARE_URL );
+   
+  switch(ret) {
+    case HTTP_UPDATE_FAILED:
+        Serial.println("[update] Update failed.");
+        break;
+    case HTTP_UPDATE_NO_UPDATES:
+        Serial.println("[update] Update no Update.");
+        break;
+    case HTTP_UPDATE_OK:
+        Serial.println("[update] Update ok."); // may not called we reboot the ESP
+        break;
+              }
+           }  else {
+    Serial.print( "Firmware check failed, got HTTP response code " );
+    Serial.println( httpCode );
+           }
+  httpClient.end();
+  
+  Blynk.virtualWrite(VPIN_UPDATE_LED, 0);
+  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);
+  
 }
 
 void loop()

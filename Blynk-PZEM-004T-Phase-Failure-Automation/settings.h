@@ -2,6 +2,7 @@
 //                           Settings                          //
 /////////////////////////////////////////////////////////////////
 
+#define FIRMWARE_VERSION      02.01               // Version number. Increase each version by 1 number. Used for FOTA
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -36,7 +37,7 @@
 How often you would like to call function? Enter time in milliseconds  
  **************************************************/
 
-#define GET_PZEM_DATA_TIME          1000L                       // How often you wish to get PZEM data. Enter time in milliseconds 
+#define GET_PZEM_DATA_TIME          2000L                       // How often you wish to get PZEM data. Enter time in milliseconds 
 #define SEND_TO_BLYNK_TIME          1000L                       // How often you would like to send data to blynk app. Enter time in milliseconds  
 #define AUTO_MODE_TIME              20000L
 #define PHYSICAL_BUTTON_TIME        500L
@@ -61,6 +62,9 @@ How often you would like to call function? Enter time in milliseconds
 #define VPIN_BUTTON_4                 V4
 
 #define VPIN_AUTO_MODE_BUTTON_1       V5                     // This button is to switch on motor in auto mode
+#define VPIN_FIRMWARE_UPDATE          V6
+#define VPIN_FIRMWARE_VERSION         V7
+#define VPIN_UPDATE_LED               V8
 
 /* Blynk Labeled Value vpin */
 
