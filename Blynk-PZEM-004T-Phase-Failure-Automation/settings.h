@@ -2,7 +2,8 @@
 //                           Settings                          //
 /////////////////////////////////////////////////////////////////
 
-#define FIRMWARE_VERSION      02.01               // Version number. Increase each version by 1 number. Used for FOTA
+#define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
+#define BUILD_NUMBER          001                 // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -65,6 +66,7 @@ How often you would like to call function? Enter time in milliseconds
 #define VPIN_FIRMWARE_UPDATE          V6
 #define VPIN_FIRMWARE_VERSION         V7
 #define VPIN_UPDATE_LED               V8
+#define VPIN_BUILD_NUMBER             V9
 
 /* Blynk Labeled Value vpin */
 

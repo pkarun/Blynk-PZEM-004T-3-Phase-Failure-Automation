@@ -240,7 +240,8 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_SUM_FREQUENCY,           sum_of_frequency);
   Blynk.virtualWrite(vPIN_SUM_POWER_FACTOR,        sum_of_power_factor);
 
-  Blynk.virtualWrite(VPIN_FIRMWARE_VERSION,        FIRMWARE_VERSION);  
+  Blynk.virtualWrite(VPIN_FIRMWARE_VERSION,        FIRMWARE_VERSION);
+  Blynk.virtualWrite(VPIN_BUILD_NUMBER,            BUILD_NUMBER);  
 }
 
 void pzemdevice1()                                                            // Function to get PZEM device 1 data
