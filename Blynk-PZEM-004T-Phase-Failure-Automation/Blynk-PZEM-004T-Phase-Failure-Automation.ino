@@ -20,14 +20,24 @@
    Wiring:
 
    PZEM 004T v3.0 to NodeMCU
-   5v to vin
+   5v to vin/3v
    RX to D6 (has TX Pin)
    TX to D5 (has RX Pin)
    GND to GND
 
+   Relay to NodeMCU
+   
+   GND to GND
+   IN1 to D2 or GPIO 4
+   IN2 to D1 or GPIO 5
+   IN3 to D4 or GPIO 2
+   IN4 to D0 or GPIO 16
+   VCC to Vin (not for 3v)
+
 */
 
-#define BLYNK_PRINT Serial        // Uncomment for debugging 
+#define BLYNK_PRINT Serial        // Uncomment for debugging
+//#define BLYNK_DEBUG               // Uncomment for debugging
 
 #include "settings.h"           
 //#include "secret.h"               // <<--- UNCOMMENT this before you use and change values on config.h tab
@@ -185,30 +195,84 @@ void setup()
   \*********************************************************************************************/
 
   pinMode(RELAY_PIN_1, OUTPUT);
-  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_1, relay1State);
-
-
   pinMode(RELAY_PIN_2, OUTPUT);
-  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_2, relay2State);
+  
+  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
+  
+  digitalWrite(RELAY_PIN_1, relay1State);
+  digitalWrite(RELAY_PIN_2, relay1State);
+
 
   pinMode(RELAY_PIN_3, OUTPUT);
-  //  pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_3, relay3State);
-
   pinMode(RELAY_PIN_4, OUTPUT);
-  //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
-  digitalWrite(RELAY_PIN_4, relay4State);
+  
+  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
+  
+  digitalWrite(RELAY_PIN_3, relay2State);
+  digitalWrite(RELAY_PIN_4, relay2State);
 
-  timer.setInterval(GET_PZEM_DATA_TIME,       get_pzem_data);                   // How often you would like to call the function
+//  pinMode(RELAY_PIN_3, OUTPUT);
+//  //  pinMode(PUSH_BUTTON_3, INPUT_PULLUP);
+//  digitalWrite(RELAY_PIN_3, relay3State);
+//
+//  pinMode(RELAY_PIN_4, OUTPUT);
+//  //  pinMode(PUSH_BUTTON_4, INPUT_PULLUP);
+//  digitalWrite(RELAY_PIN_4, relay4State);
+
+
+  
+//  timer.setInterval(GET_PZEM_DATA_TIME,       pzemdevice1);
+//  timer.setInterval(GET_PZEM_DATA_TIME,       pzemdevice2);
+//  timer.setInterval(GET_PZEM_DATA_TIME,       pzemdevice3);
+//  timer.setInterval(GET_PZEM_DATA_TIME,       sumofpzem);
+//  timer.setInterval(GET_PZEM_DATA_TIME,       get_pzem_data);                   // How often you would like to call the function
   timer.setInterval(AUTO_MODE_TIME,           auto_mode);    
   timer.setInterval(PHYSICAL_BUTTON_TIME,     checkPhysicalButton);             // Setup a Relay function to be called every 100 ms
-  timer.setInterval(SEND_TO_BLYNK_TIME,       sendtoBlynk);                     // Send PZEM values blynk server every 10 sec
+  timer.setInterval(5000,       reconnectBlynk);
+  
+//  timer.setInterval(SEND_TO_BLYNK_TIME,       sendtoBlynk);                     // Send PZEM values blynk server every 10 sec
+
+//  timer.setInterval(SEND_TO_BLYNK_TIME,       blynkCheck);
+  
  } 
 
 void sendtoBlynk()                                                           // Here we are sending PZEM data to blynk
 {
+//  if (Blynk.connected()) {                                                    // If connected run as normal
+
+//  if (WiFi.status() == WL_CONNECTED) {  
+
+//if (Blynk.connect() == true){
+
+/*if (WiFi.status() == WL_IDLE_STATUS) { // when not connected to a network, but powered on
+    Serial.println("WL_IDLE_STATUS");
+  }
+  else if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("WL_CONNECTED ");
+    Serial.println(WiFi.localIP());
+  }
+  else if (WiFi.status() == WL_NO_SSID_AVAIL) {
+    Serial.println("WL_NO_SSID_AVAIL");
+  }
+  else if (WiFi.status() == WL_CONNECT_FAILED) {
+    Serial.println("WL_CONNECT_FAILED");
+  }
+  else if (WiFi.status() == WL_CONNECTION_LOST) {
+    Serial.println("WL_CONNECTION_LOST");
+  }
+  else if (WiFi.status() == WL_DISCONNECTED) {
+    Serial.println("WL_DISCONNECTED");
+  }
+  else {
+    Serial.print("unknown status: ");
+    Serial.println(WiFi.status());
+  }*/
+
+  
+
+//if (WiFi.status() == 3) {
+
+  Serial.println("Internet is available, sending data to Blynk app");
   Blynk.virtualWrite(vPIN_VOLTAGE_1,               voltage_usage_1);
   Blynk.virtualWrite(vPIN_CURRENT_USAGE_1,         current_usage_1);
   Blynk.virtualWrite(vPIN_ACTIVE_POWER_1,          active_power_1);
@@ -272,6 +336,15 @@ void pzemdevice1()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_1);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_1, 0);
     Serial.println("====================================================");
+
+  Blynk.virtualWrite(vPIN_VOLTAGE_1,               voltage_usage_1);
+  Blynk.virtualWrite(vPIN_CURRENT_USAGE_1,         current_usage_1);
+  Blynk.virtualWrite(vPIN_ACTIVE_POWER_1,          active_power_1);
+  Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_1,         active_energy_1);
+  Blynk.virtualWrite(vPIN_FREQUENCY_1,             frequency_1);
+  Blynk.virtualWrite(vPIN_POWER_FACTOR_1,          power_factor_1);
+  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_1,      over_power_alarm_1);
+
   }
   else {
     Serial.println("Failed to read PZEM Device 1");
@@ -323,7 +396,15 @@ void pzemdevice2()                                                              
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
-    
+
+     Blynk.virtualWrite(vPIN_VOLTAGE_2,               voltage_usage_2);
+  Blynk.virtualWrite(vPIN_CURRENT_USAGE_2,         current_usage_2);
+  Blynk.virtualWrite(vPIN_ACTIVE_POWER_2,          active_power_2);
+  Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_2,         active_energy_2);
+  Blynk.virtualWrite(vPIN_FREQUENCY_2,             frequency_2);
+  Blynk.virtualWrite(vPIN_POWER_FACTOR_2,          power_factor_2);
+  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_2,      over_power_alarm_2);
+
   }
     else {
     Serial.println("Failed to read PZEM Device 2");
@@ -375,7 +456,15 @@ void pzemdevice3()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
     Serial.println("====================================================");
-    
+
+     Blynk.virtualWrite(vPIN_VOLTAGE_3,               voltage_usage_3);
+  Blynk.virtualWrite(vPIN_CURRENT_USAGE_3,         current_usage_3);
+  Blynk.virtualWrite(vPIN_ACTIVE_POWER_3,          active_power_3);
+  Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_3,         active_energy_3);
+  Blynk.virtualWrite(vPIN_FREQUENCY_3,             frequency_3);
+  Blynk.virtualWrite(vPIN_POWER_FACTOR_3,          power_factor_3);
+  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_3,      over_power_alarm_3);
+
   }
   else {
     Serial.println("Failed to read PZEM Device 3");
@@ -416,6 +505,14 @@ void sumofpzem()
     Serial.print("SUM of FREQUENCY:         ");   Serial.println(sum_of_frequency);           // Hz
     Serial.print("SUM of POWER_FACTOR:      ");   Serial.println(sum_of_power_factor);
     Serial.println("====================================================");
+
+    Blynk.virtualWrite(vPIN_SUM_VOLTAGE,             sum_of_voltage);
+  Blynk.virtualWrite(vPIN_SUM_CURRENT_USAGE,       sum_of_current);
+  Blynk.virtualWrite(vPIN_SUM_ACTIVE_POWER,        sum_of_power);
+  Blynk.virtualWrite(vPIN_SUM_ACTIVE_ENERGY,       sum_of_active_energy);
+  Blynk.virtualWrite(vPIN_SUM_FREQUENCY,           sum_of_frequency);
+  Blynk.virtualWrite(vPIN_SUM_POWER_FACTOR,        sum_of_power_factor);
+
 }
 void resetEnergy(uint8_t slaveAddr)                                                // Function to reset energy value on PZEM device.
 {
@@ -466,31 +563,29 @@ BLYNK_CONNECTED() {                                           // Every time we c
   ReCnctCount = 0;
   Blynk.syncVirtual(VPIN_BUTTON_1);                           // Request the latest state from the server
   Blynk.syncVirtual(VPIN_BUTTON_2);
-  Blynk.syncVirtual(VPIN_BUTTON_3);
-  Blynk.syncVirtual(VPIN_BUTTON_4);
+//  Blynk.syncVirtual(VPIN_BUTTON_3);
+//  Blynk.syncVirtual(VPIN_BUTTON_4);
   Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
   
   Blynk.virtualWrite(VPIN_UPDATE_LED,         0);             // Turn off FOTA Led
   Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app
+
+  get_pzem_data();
+//     Blynk.virtualWrite(VPIN_FIRMWARE_VERSION,        FIRMWARE_VERSION);
+//  Blynk.virtualWrite(VPIN_BUILD_NUMBER,            BUILD_NUMBER); 
 }
 
 /* When App button is pushed - switch the state */
 
-BLYNK_WRITE(VPIN_BUTTON_1) {  
+BLYNK_WRITE(VPIN_BUTTON_1) {                            // When button 1 pressed on app, turn on relay 1 and relay 2
   relay1State = param.asInt();
   digitalWrite(RELAY_PIN_1, relay1State);
+  digitalWrite(RELAY_PIN_2, relay1State);
 }
-BLYNK_WRITE(VPIN_BUTTON_2) {
+BLYNK_WRITE(VPIN_BUTTON_2) {                            // When button 2 pressed on app, turn on relay 3 and relay 4
   relay2State = param.asInt();
-  digitalWrite(RELAY_PIN_2, relay2State);
-}
-BLYNK_WRITE(VPIN_BUTTON_3) {
-  relay3State = param.asInt();
-  digitalWrite(RELAY_PIN_3, relay3State);
-}
-BLYNK_WRITE(VPIN_BUTTON_4) {
-  relay4State = param.asInt();
-  digitalWrite(RELAY_PIN_4, relay4State);
+  digitalWrite(RELAY_PIN_3, relay2State);
+  digitalWrite(RELAY_PIN_4, relay2State);
 }
 BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
   auto_mode_state_1 = param.asInt();
@@ -504,16 +599,18 @@ BLYNK_WRITE(VPIN_FIRMWARE_UPDATE) {                         // Get update button
   
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
-  if (digitalRead(PUSH_BUTTON_1) == LOW) {
+  if (digitalRead(PUSH_BUTTON_1) == LOW) {                        // When push button 1 pressed, turn on relay 1 and relay 2 
     // pushButton1State is used to avoid sequential toggles
     if (pushButton1State != LOW) {
       
       // Toggle Relay state
       relay1State = !relay1State;
       digitalWrite(RELAY_PIN_1, relay1State);
+      digitalWrite(RELAY_PIN_2, relay1State);
 
       // Update Button Widget
-      Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
+      Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);             // Update button 1 on app
+
     }
     pushButton1State = LOW;
   } else {
@@ -526,10 +623,12 @@ void checkPhysicalButton()                                  // Here we are going
 
       // Toggle Relay state
       relay2State = !relay2State;
-      digitalWrite(RELAY_PIN_2, relay2State);
+      digitalWrite(RELAY_PIN_3, relay2State);
+      digitalWrite(RELAY_PIN_4, relay2State);
 
       // Update Button Widget
       Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
+      
     }
     pushButton2State = LOW;
   } else {
@@ -587,11 +686,14 @@ void swith_off()                                        // Function to check if 
 
     Serial.println("Relay 1 OFF..");
     digitalWrite(RELAY_PIN_1, HIGH);
-    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);
+    
     
     Serial.println("Relay 2 OFF..");
     digitalWrite(RELAY_PIN_2, HIGH);
-    Blynk.virtualWrite(VPIN_BUTTON_2, HIGH);
+
+
+    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);
+
   }
 }
 
@@ -601,12 +703,11 @@ void auto_mode()                                      // Function to check if au
     Serial.println("All condition is TRUE...swtiching on relay now.");
     
     digitalWrite(RELAY_PIN_1, LOW);                  // Turn on relay 1 
-    Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON
-    Serial.println("RELAY 1 Turned ON");
     
+    Serial.println("RELAY 1 Turned ON");
     digitalWrite(RELAY_PIN_2, LOW);
-    Blynk.virtualWrite(VPIN_BUTTON_2, LOW);
     Serial.println("RELAY 2 Turned ON");  
+    Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON
   }
 }
   
@@ -621,6 +722,7 @@ void checkforupdate()
   int httpCode = httpClient.GET();
   if( httpCode == 200 ) {
   Serial.println( "Update file found, starting update" );
+
   Blynk.virtualWrite(VPIN_UPDATE_LED, 1023);
   
   t_httpUpdate_return ret = ESPhttpUpdate.update( FIRMWARE_URL );
@@ -641,21 +743,43 @@ void checkforupdate()
     Serial.println( httpCode );
            }
   httpClient.end();
-  
+
   Blynk.virtualWrite(VPIN_UPDATE_LED, 0);
   Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);
+
   
 }
 
+/*
+void blynkCheck() {
+  if (WiFi.status() == 3) {
+    if (!Blynk.connected()) {
+      Serial.println("WiFi OK, trying to connect to the server...");
+      Blynk.connect();
+      sendtoBlynk();
+      
+    }
+  }
+  if (WiFi.status() == 1) {
+    Serial.println("No WiFi connection, going offline.");
+  }
+}
+*/
+
 void loop()
 {
+//  Serial.println("in loop now");
   ArduinoOTA.handle();                                                        // For OTA
   timer.run();
-
+  
   if (Blynk.connected()) {                                                    // If connected run as normal
+    Serial.println("in Blynk.connected()");   
+    get_pzem_data();  
     Blynk.run();
   } 
-  else if (ReCnctFlag == 0) {                                                 // If NOT connected and not already trying to reconnect, set timer to try to reconnect in 30 seconds
+  
+ /* else if (ReCnctFlag == 0) {                                                 // If NOT connected and not already trying to reconnect, set timer to try to reconnect in 30 seconds
+      Serial.println("else if (ReCnctFlag == 0");
       ReCnctFlag = 1;                                                         // Set reconnection Flag
       Serial.println("Starting reconnection timer in 30 seconds...");
       timer.setTimeout(30000L, []() {                                         // Lambda Reconnection Timer Function
@@ -665,5 +789,30 @@ void loop()
       Serial.println(ReCnctCount);
       Blynk.connect();                                                        // Try to reconnect to the server
     });                                                                       // END Timer Function
-    }
+    } */
+     
 }
+
+void reconnectBlynk() {
+  if (!Blynk.connected()) {
+    Serial.println("Lost connection");
+    if(Blynk.connect()) {
+      Serial.println("Reconnected");
+    }
+    else {
+      Serial.println("Not reconnected");
+    }
+  }
+}
+
+bool isWifiAvailable(){
+   Serial.print("checking internet status ");
+   if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("WL_CONNECTED ");
+    return true;
+  }
+  else {
+    Serial.println("WL_DISCONNECTED");
+    return false;
+  }
+  } 
