@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////
 
 #define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
-#define BUILD_NUMBER          40                 // Build number is something like change some variables in code and building binary file. 
+#define BUILD_NUMBER          002                 // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -59,8 +59,8 @@ How often you would like to call function? Enter time in milliseconds
 
 #define VPIN_BUTTON_1                 V1
 #define VPIN_BUTTON_2                 V2
-//#define VPIN_BUTTON_3                 V3
-//#define VPIN_BUTTON_4                 V4
+#define VPIN_BUTTON_3                 V3
+#define VPIN_BUTTON_4                 V4
 
 #define VPIN_AUTO_MODE_BUTTON_1       V5                     // This button is to switch on motor in auto mode
 #define VPIN_FIRMWARE_UPDATE          V6
