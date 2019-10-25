@@ -193,22 +193,13 @@ void setup()
       RELAY code
   \*********************************************************************************************/
 
-  pinMode(RELAY_PIN_1, OUTPUT);
-  pinMode(RELAY_PIN_2, OUTPUT);
-  
-  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);
-  
+  pinMode(RELAY_PIN_1, OUTPUT);  
+  pinMode(PUSH_BUTTON_1, INPUT_PULLUP);  
   digitalWrite(RELAY_PIN_1, relay1State);
-  digitalWrite(RELAY_PIN_2, relay1State);
-
-
-  pinMode(RELAY_PIN_3, OUTPUT);
-  pinMode(RELAY_PIN_4, OUTPUT);
-  
-  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);
-  
-  digitalWrite(RELAY_PIN_3, relay2State);
-  digitalWrite(RELAY_PIN_4, relay2State);
+    
+  pinMode(RELAY_PIN_2, OUTPUT);  
+  pinMode(PUSH_BUTTON_2, INPUT_PULLUP);  
+  digitalWrite(RELAY_PIN_2, relay2State);
 
   timer.setInterval(GET_PZEM_DATA_TIME,       get_pzem_data);                   // How often you would like to call the function
   timer.setInterval(AUTO_MODE_TIME,           auto_mode);    
@@ -488,12 +479,10 @@ BLYNK_CONNECTED() {                                           // Every time we c
 BLYNK_WRITE(VPIN_BUTTON_1) {  
   relay1State = param.asInt();
   digitalWrite(RELAY_PIN_1, relay1State);
-  digitalWrite(RELAY_PIN_2, relay1State);
 }
 BLYNK_WRITE(VPIN_BUTTON_2) {
   relay2State = param.asInt();
-  digitalWrite(RELAY_PIN_3, relay2State);
-  digitalWrite(RELAY_PIN_4, relay2State);
+  digitalWrite(RELAY_PIN_2, relay2State);
 }
 BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
   auto_mode_state_1 = param.asInt();
@@ -513,9 +502,7 @@ void checkPhysicalButton()                                  // Here we are going
       
       // Toggle Relay state
       relay1State = !relay1State;
-      digitalWrite(RELAY_PIN_1, relay1State);
-      digitalWrite(RELAY_PIN_2, relay1State);
-
+      digitalWrite(RELAY_PIN_1, relay1State);      
       // Update Button Widget
       Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
     }
@@ -530,9 +517,8 @@ void checkPhysicalButton()                                  // Here we are going
 
       // Toggle Relay state
       relay2State = !relay2State;
-      digitalWrite(RELAY_PIN_3, relay2State);
-      digitalWrite(RELAY_PIN_4, relay2State);
-
+      digitalWrite(RELAY_PIN_2, relay2State);
+      
       // Update Button Widget
       Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
     }
@@ -590,13 +576,9 @@ void swith_off()                                        // Function to check if 
     Serial.println("Low Voltage is detected!....");
     Serial.println("Switching off relay now..");
 
-    
     digitalWrite(RELAY_PIN_1, HIGH);
     Serial.println("Relay 1 OFF..");
-    
-    digitalWrite(RELAY_PIN_2, HIGH);
-    Serial.println("Relay 2 OFF..");
-    
+       
     Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);
   }
 }
@@ -606,13 +588,9 @@ void auto_mode()                                      // Function to check if au
   if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
     Serial.println("All condition is TRUE...swtiching on relay now.");
     
-    digitalWrite(RELAY_PIN_1, LOW);                  // Turn on relay 1 
-    digitalWrite(RELAY_PIN_2, LOW);
-    
-    Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON
-    
+    digitalWrite(RELAY_PIN_1, LOW);                  // Turn on relay 1         
+    Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON    
     Serial.println("RELAY 1 Turned ON"); 
-    Serial.println("RELAY 2 Turned ON");  
   }
 }
   
@@ -649,8 +627,7 @@ void checkforupdate()
   httpClient.end();
   
   Blynk.virtualWrite(VPIN_UPDATE_LED, 0);
-  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);
-  
+  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);  
 }
 
 void loop()

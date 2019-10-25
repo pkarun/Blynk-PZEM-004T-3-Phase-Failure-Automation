@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////
 
 #define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
-#define BUILD_NUMBER          002                 // Build number is something like change some variables in code and building binary file. 
+#define BUILD_NUMBER          003                 // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -38,7 +38,7 @@
 How often you would like to call function? Enter time in milliseconds  
  **************************************************/
 
-#define GET_PZEM_DATA_TIME          2000L                       // How often you wish to get PZEM data. Enter time in milliseconds 
+#define GET_PZEM_DATA_TIME          500L                        // How often you wish to get PZEM data. Enter time in milliseconds 
 #define SEND_TO_BLYNK_TIME          1000L                       // How often you would like to send data to blynk app. Enter time in milliseconds  
 #define AUTO_MODE_TIME              20000L
 #define PHYSICAL_BUTTON_TIME        500L
