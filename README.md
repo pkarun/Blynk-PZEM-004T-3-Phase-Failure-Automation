@@ -2,17 +2,19 @@
 Blynk PZEM 004T 3 Phase failure motor automation.  
 
 <h2>What it Does?</h2>
-1) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 and Relay 2</br> 
+1) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1</br> 
 2) Monitors 3 PZEM 004T v3.0 device data with one ESP8266 device (multiple salve)</br> 
-3) Auto Mode ON/OFF - With Auto Mode ON, it turn ON Relay 1 and Relay 2 if it meets all 3 Phase voltage reaches minimum voltage value, if any those condition don't satisify it won't turn on</br> 
-4) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 and Relay 2</br>
+3) Auto Mode ON/OFF - With Auto Mode ON, it turn ON Relay 1 if it meets all 3 Phase voltage reaches minimum voltage value. If any those condition don't satisify, then it won't turn on</br> 
+4) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 </br>
 5) Show sum of voltage, current usage, active power, active energy, frequency and power factor</br>
 6) You can update firmware using "HTTP Server OTA" method. In other words, through internet you can update firware without having physical access to device or without connecting to same network</br>
+7) For other 3 Relays user can connect other devices to control On/Off through internet using blynk app </br>
 
 <h2>Requirements</h2>
 1) <a href ="http://s.click.aliexpress.com/e/ElytDjIu">3 PZEM-004T v3.0</a></br> 
 2) <a href="http://s.click.aliexpress.com/e/nlefJ4PI">NodeMCU</a></br> 
-3) <a href="https://play.google.com/store/apps/details?id=cc.blynk">Blynk App</a></br> 
+3) <a href="http://s.click.aliexpress.com/e/eK05ynRS">4 Channel Relay Module</a></br> 
+4) <a href="https://play.google.com/store/apps/details?id=cc.blynk">Blynk App</a></br> 
 
 <h2>Installation</h2>
 <ul>

@@ -201,6 +201,12 @@ void setup()
   pinMode(PUSH_BUTTON_2, INPUT_PULLUP);  
   digitalWrite(RELAY_PIN_2, relay2State);
 
+  pinMode(RELAY_PIN_3, OUTPUT);   
+  digitalWrite(RELAY_PIN_3, relay3State);
+
+  pinMode(RELAY_PIN_4, OUTPUT);   
+  digitalWrite(RELAY_PIN_4, relay4State);
+
   timer.setInterval(GET_PZEM_DATA_TIME,       get_pzem_data);                   // How often you would like to call the function
   timer.setInterval(AUTO_MODE_TIME,           auto_mode);    
   timer.setInterval(PHYSICAL_BUTTON_TIME,     checkPhysicalButton);             // Setup a Relay function to be called every 100 ms
@@ -484,6 +490,14 @@ BLYNK_WRITE(VPIN_BUTTON_2) {
   relay2State = param.asInt();
   digitalWrite(RELAY_PIN_2, relay2State);
 }
+BLYNK_WRITE(VPIN_BUTTON_3) {
+  relay3State = param.asInt();
+  digitalWrite(RELAY_PIN_3, relay3State);
+}
+BLYNK_WRITE(VPIN_BUTTON_4) {
+  relay4State = param.asInt();
+  digitalWrite(RELAY_PIN_4, relay4State);
+}
 BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
   auto_mode_state_1 = param.asInt();
 }
@@ -497,14 +511,10 @@ BLYNK_WRITE(VPIN_FIRMWARE_UPDATE) {                         // Get update button
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
-    // pushButton1State is used to avoid sequential toggles
-    if (pushButton1State != LOW) {
-      
-      // Toggle Relay state
-      relay1State = !relay1State;
-      digitalWrite(RELAY_PIN_1, relay1State);      
-      // Update Button Widget
-      Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);
+    if (pushButton1State != LOW) {                          // pushButton1State is used to avoid sequential toggles  
+      relay1State = !relay1State;                           // Toggle Relay state
+      digitalWrite(RELAY_PIN_1, relay1State);            
+      Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);       // Update Button Widget
     }
     pushButton1State = LOW;
   } else {
@@ -512,54 +522,15 @@ void checkPhysicalButton()                                  // Here we are going
   }
 
   if (digitalRead(PUSH_BUTTON_2) == LOW) {
-    // pushButton2State is used to avoid sequential toggles
-    if (pushButton2State != LOW) {
-
-      // Toggle Relay state
-      relay2State = !relay2State;
+    if (pushButton2State != LOW) {                        // pushButton2State is used to avoid sequential toggles     
+      relay2State = !relay2State;                         // Toggle Relay state
       digitalWrite(RELAY_PIN_2, relay2State);
-      
-      // Update Button Widget
-      Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);
+      Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);     // Update Button Widget
     }
     pushButton2State = LOW;
   } else {
     pushButton2State = HIGH;
   }
-
-/* push button 3 and push button 4 are disabled */
-
-  //  if (digitalRead(PUSH_BUTTON_3) == LOW) {
-  //    // pushButton3State is used to avoid sequential toggles
-  //    if (pushButton3State != LOW) {
-  //
-  //      // Toggle Relay state
-  //      relay3State = !relay3State;
-  //      digitalWrite(RELAY_PIN_3, relay3State);
-  //
-  //      // Update Button Widget
-  //      Blynk.virtualWrite(VPIN_BUTTON_3, relay3State);
-  //    }
-  //    pushButton3State = LOW;
-  //  } else {
-  //    pushButton3State = HIGH;
-  //  }
-
-  //  if (digitalRead(PUSH_BUTTON_4) == LOW) {
-  //    // pushButton4State is used to avoid sequential toggles
-  //    if (pushButton4State != LOW) {
-  //
-  //      // Toggle Relay state
-  //      relay4State = !relay4State;
-  //      digitalWrite(RELAY_PIN_4, relay4State);
-  //
-  //      // Update Button Widget
-  //      Blynk.virtualWrite(VPIN_BUTTON_4, relay4State);
-  //    }
-  //    pushButton4State = LOW;
-  //  } else {
-  //    pushButton4State = HIGH;
-  //  }
 }
 
 void get_pzem_data()                                          // Function to check time to see if it reached mentioned time to fetch PZEM data
@@ -570,16 +541,16 @@ void get_pzem_data()                                          // Function to che
     sumofpzem();
 }
 
-void swith_off()                                        // Function to check if voltage low condition occurs if occurs, switch off relays
+void swith_off()                                              // Function to check if voltage low condition occurs if occurs, switch off relays
 {
   if(voltage_usage_1 < VOLTAGE_1_CUTOFF || voltage_usage_2 < VOLTAGE_2_CUTOFF || voltage_usage_3 < VOLTAGE_3_CUTOFF){
     Serial.println("Low Voltage is detected!....");
     Serial.println("Switching off relay now..");
 
-    digitalWrite(RELAY_PIN_1, HIGH);
+    digitalWrite(RELAY_PIN_1, HIGH);                // Turnoff Relay 1
     Serial.println("Relay 1 OFF..");
        
-    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);
+    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);        // Update Relay Off status on Blynk app
   }
 }
 
@@ -588,7 +559,7 @@ void auto_mode()                                      // Function to check if au
   if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
     Serial.println("All condition is TRUE...swtiching on relay now.");
     
-    digitalWrite(RELAY_PIN_1, LOW);                  // Turn on relay 1         
+    digitalWrite(RELAY_PIN_1, LOW);                  // Turn on Relay 1         
     Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON    
     Serial.println("RELAY 1 Turned ON"); 
   }
