@@ -113,10 +113,8 @@ int relay2State             = HIGH;
 int pushButton2State        = HIGH;
 
 int relay3State             = HIGH;
-//int pushButton3State      = HIGH;
 
 int relay4State             = HIGH;
-//int pushButton4State      = HIGH;
 
 int auto_mode_state_1       = HIGH;
 
@@ -124,6 +122,9 @@ int ReCnctFlag;               // Reconnection Flag
 int ReCnctCount = 0;          // Reconnection counter
 
 int firmwarestate = HIGH;     // Used for firmware update process
+
+int underVoltageAlertOnOffState;      // Under voltage one time alert on off state variable
+bool underVoltageAlertFlag = true;    // Under voltage alert flag set to true 
 
 void setup()
 {
@@ -475,6 +476,7 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_3);
   Blynk.syncVirtual(VPIN_BUTTON_4);
   Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
+  Blynk.syncVirtual(VPIN_LOW_V_NOTIFICATION);
   
   Blynk.virtualWrite(VPIN_UPDATE_LED,         0);             // Turn off FOTA Led
   Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app
@@ -507,7 +509,14 @@ BLYNK_WRITE(VPIN_FIRMWARE_UPDATE) {                         // Get update button
     checkforupdate();
      }
 }
-  
+
+/* Under Voltage one time alert */  
+
+BLYNK_WRITE(VPIN_LOW_V_NOTIFICATION)                      // Get button value from blynk app
+{
+  underVoltageAlertOnOffState = param.asInt();
+}
+
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
@@ -551,9 +560,25 @@ void swith_off()                                              // Function to che
     Serial.println("Relay 1 OFF..");
        
     Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);        // Update Relay Off status on Blynk app
+
+    low_volt_alert();
   }
 }
 
+void low_volt_alert()                              // Function to send blynk push notifiction if low voltage is detected
+{
+  if(underVoltageAlertOnOffState == 0 && underVoltageAlertFlag == true){
+    Serial.println("Sending Blynk notification");
+    Blynk.notify("Under voltage detected!");
+    underVoltageAlertFlag = false;
+  }
+  if(underVoltageAlertOnOffState == 1){
+    Serial.println("Low volt alert Button status is OFF");
+  }
+  else{
+    Serial.println("Already blynk notification sent once");
+  }
+}
 void auto_mode()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
 {    
   if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
