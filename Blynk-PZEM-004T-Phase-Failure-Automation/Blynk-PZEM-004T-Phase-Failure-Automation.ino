@@ -123,8 +123,16 @@ int ReCnctCount = 0;          // Reconnection counter
 
 int firmwarestate = HIGH;     // Used for firmware update process
 
-int underVoltageAlertOnOffState;      // Under voltage one time alert on off state variable
-bool underVoltageAlertFlag = true;    // Under voltage alert flag set to true 
+int underVoltageAlertOnOffState;         // Under voltage one time alert on off state variable
+int phaseFailureAlertOnOffState;         // Phase failure voltage one time alert on off state variable
+bool underVoltageAlertFlag = true;       // Under voltage alert flag set to true 
+
+bool lowvoltagenotificationflag   = true;
+bool phasefailurenotificationflag = true;
+
+bool phasefailureflag   = false;
+bool lowvoltageflag     = false;
+bool highvoltageflag    = false;
 
 void setup()
 {
@@ -175,9 +183,7 @@ void setup()
 
 // resetEnergy(0x01);                        // uncomment to reset pzem energy
 
-
 #if defined(USE_LOCAL_SERVER)
-
   WiFi.begin(WIFI_SSID, WIFI_PASS);         // Non-blocking if no WiFi available
   Blynk.config(AUTH, SERVER, PORT);
   Blynk.connect();
@@ -330,7 +336,6 @@ void pzemdevice2()                                                              
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
-    
   }
     else {
     Serial.println("Failed to read PZEM Device 2");
@@ -382,7 +387,6 @@ void pzemdevice3()                                                            //
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
     Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
     Serial.println("====================================================");
-    
   }
   else {
     Serial.println("Failed to read PZEM Device 3");
@@ -423,6 +427,9 @@ void sumofpzem()
     Serial.print("SUM of FREQUENCY:         ");   Serial.println(sum_of_frequency);           // Hz
     Serial.print("SUM of POWER_FACTOR:      ");   Serial.println(sum_of_power_factor);
     Serial.println("====================================================");
+      
+    low_voltage_check();
+    high_voltage_check();
 }
 void resetEnergy(uint8_t slaveAddr)                                                // Function to reset energy value on PZEM device.
 {
@@ -477,7 +484,8 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_4);
   Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
   Blynk.syncVirtual(VPIN_LOW_V_NOTIFICATION);
-  
+  Blynk.syncVirtual(VPIN_PHASE_FAIL_NOTIFICATION);
+   
   Blynk.virtualWrite(VPIN_UPDATE_LED,         0);             // Turn off FOTA Led
   Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app
 }
@@ -486,7 +494,12 @@ BLYNK_CONNECTED() {                                           // Every time we c
 
 BLYNK_WRITE(VPIN_BUTTON_1) {  
   relay1State = param.asInt();
+  if(lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){   // Don't activate relay if voltage issue is there
   digitalWrite(RELAY_PIN_1, relay1State);
+  }
+  else{
+   Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);       // Update Button Widget 
+  }
 }
 BLYNK_WRITE(VPIN_BUTTON_2) {
   relay2State = param.asInt();
@@ -516,11 +529,15 @@ BLYNK_WRITE(VPIN_LOW_V_NOTIFICATION)                      // Get button value fr
 {
   underVoltageAlertOnOffState = param.asInt();
 }
+BLYNK_WRITE(VPIN_PHASE_FAIL_NOTIFICATION)                 // Get button value from blynk app
+{
+  phaseFailureAlertOnOffState = param.asInt();
+}
 
 void checkPhysicalButton()                                  // Here we are going to check push button pressed or not and change relay state
 {
   if (digitalRead(PUSH_BUTTON_1) == LOW) {
-    if (pushButton1State != LOW) {                          // pushButton1State is used to avoid sequential toggles  
+    if (pushButton1State != LOW && (lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false) ) {                          // pushButton1State is used to avoid sequential toggles  
       relay1State = !relay1State;                           // Toggle Relay state
       digitalWrite(RELAY_PIN_1, relay1State);            
       Blynk.virtualWrite(VPIN_BUTTON_1, relay1State);       // Update Button Widget
@@ -529,7 +546,7 @@ void checkPhysicalButton()                                  // Here we are going
   } else {
     pushButton1State = HIGH;
   }
-
+  
   if (digitalRead(PUSH_BUTTON_2) == LOW) {
     if (pushButton2State != LOW) {                        // pushButton2State is used to avoid sequential toggles     
       relay2State = !relay2State;                         // Toggle Relay state
@@ -550,40 +567,65 @@ void get_pzem_data()                                          // Function to che
     sumofpzem();
 }
 
-void swith_off()                                              // Function to check if voltage low condition occurs if occurs, switch off relays
+void low_voltage_check()
 {
-  if(voltage_usage_1 < VOLTAGE_1_CUTOFF || voltage_usage_2 < VOLTAGE_2_CUTOFF || voltage_usage_3 < VOLTAGE_3_CUTOFF){
-    Serial.println("Low Voltage is detected!....");
-    Serial.println("Switching off relay now..");
-
-    digitalWrite(RELAY_PIN_1, HIGH);                // Turnoff Relay 1
-    Serial.println("Relay 1 OFF..");
-       
-    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);        // Update Relay Off status on Blynk app
-
+  if(voltage_usage_1 == 0 || voltage_usage_2 == 0 || voltage_usage_3 == 0){
+    Serial.println("Phase failure detected...");
+    phasefailureflag = true;
+    phasefailurenotification();
+  } else if(voltage_usage_1 < LOW_VOLTAGE_1_CUTOFF || voltage_usage_2 < LOW_VOLTAGE_2_CUTOFF || voltage_usage_3 < LOW_VOLTAGE_3_CUTOFF){
+    Serial.println("Low voltage detected...");
+    lowvoltageflag = true;
+    swith_off();
     low_volt_alert();
+  } else {
+      Serial.println("Voltage back to normal");
+      lowvoltagenotificationflag = true;
+      phasefailurenotificationflag = true;
+      lowvoltageflag = false;
+      phasefailureflag = false;      
   }
+}
+
+void high_voltage_check()
+{
+  if(voltage_usage_1 > HIGH_VOLTAGE_1_CUTOFF || voltage_usage_2 > HIGH_VOLTAGE_2_CUTOFF || voltage_usage_3 > HIGH_VOLTAGE_3_CUTOFF){
+    Serial.println("High voltage detected...");
+    highvoltageflag = true;
+    swith_off();
+  }  
 }
 
 void low_volt_alert()                              // Function to send blynk push notifiction if low voltage is detected
 {
-  if(underVoltageAlertOnOffState == 0 && underVoltageAlertFlag == true){
-    Serial.println("Sending Blynk notification");
+  if(lowvoltagenotificationflag == true && underVoltageAlertOnOffState == 0){ 
+    Serial.println("Sending Under voltage Blynk notification");
     Blynk.notify("Under voltage detected!");
-    underVoltageAlertFlag = false;
-  }
-  if(underVoltageAlertOnOffState == 1){
-    Serial.println("Low volt alert Button status is OFF");
-  }
-  else{
-    Serial.println("Already blynk notification sent once");
+    lowvoltagenotificationflag = false;
   }
 }
+
+void phasefailurenotification()
+{
+   if(phasefailurenotificationflag == true && phaseFailureAlertOnOffState == 0){
+     Serial.println("Sending Phase Failure Blynk notification");
+     Blynk.notify("Phase Failure Detected!");
+     phasefailurenotificationflag = false;
+   }
+}
+
+void swith_off()                                              // Function to switch off relays
+{
+    Serial.println("Switching off relay now..");
+    digitalWrite(RELAY_PIN_1, HIGH);                // Turnoff Relay 1
+    Serial.println("Relay 1 OFF..");       
+    Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);        // Update Relay Off status on Blynk app   
+}
+  
 void auto_mode()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
 {    
-  if(auto_mode_state_1 == LOW && voltage_usage_1 > VOLTAGE_1_CUTOFF && voltage_usage_2 > VOLTAGE_2_CUTOFF && voltage_usage_3 > VOLTAGE_3_CUTOFF){  //checks if auto mode is ON and voltage values is greater than min value
-    Serial.println("All condition is TRUE...swtiching on relay now.");
-    
+  if(auto_mode_state_1 == LOW && lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){  //checks if auto mode is ON and voltage values is greater than min value
+    Serial.println("All condition is TRUE...swtiching on relay now.");    
     digitalWrite(RELAY_PIN_1, LOW);                  // Turn on Relay 1         
     Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON    
     Serial.println("RELAY 1 Turned ON"); 
@@ -630,7 +672,6 @@ void loop()
 {
   ArduinoOTA.handle();                                                        // For OTA
   timer.run();
-
   if (Blynk.connected()) {                                                    // If connected run as normal
     Blynk.run();
   } 

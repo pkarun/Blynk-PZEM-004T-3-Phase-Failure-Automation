@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////
 
 #define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
-#define BUILD_NUMBER          001                 // Build number is something like change some variables in code and building binary file. 
+#define BUILD_NUMBER          004                 // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -23,8 +23,6 @@
 
 #define PUSH_BUTTON_1         13                  // D7 or GPIO 13
 #define PUSH_BUTTON_2         0                   // D3 or GPIO 0
-//#define PUSH_BUTTON_3       14                  // D  or GPIO
-//#define PUSH_BUTTON_4       10                  // D  or GPIO
 
 /***************************************************
           PZEM address value assignment
@@ -47,9 +45,13 @@ How often you would like to call function? Enter time in milliseconds
           variable value assignment
  **************************************************/
 
-#define VOLTAGE_1_CUTOFF         180                           // Voltage cut off value. If voltage is less than this value, then it switch off the relay 
-#define VOLTAGE_2_CUTOFF         180
-#define VOLTAGE_3_CUTOFF         180
+#define LOW_VOLTAGE_1_CUTOFF         180                           // Low Voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define LOW_VOLTAGE_2_CUTOFF         180
+#define LOW_VOLTAGE_3_CUTOFF         180
+
+#define HIGH_VOLTAGE_1_CUTOFF        300                           // High Voltage cut off value. If voltage is less than this value, then it switch off the relay 
+#define HIGH_VOLTAGE_2_CUTOFF        300
+#define HIGH_VOLTAGE_3_CUTOFF        300
 
 /***************************************************
           Blynk Virtual Pin Assignment
@@ -67,7 +69,9 @@ How often you would like to call function? Enter time in milliseconds
 #define VPIN_FIRMWARE_VERSION         V7
 #define VPIN_UPDATE_LED               V8
 #define VPIN_BUILD_NUMBER             V9
-#define VPIN_LOW_V_NOTIFICATION       V10                    // Low voltage alert notification button on/off
+
+#define VPIN_PHASE_FAIL_NOTIFICATION  V50                    // Phase failure alert notification button on/off
+#define VPIN_LOW_V_NOTIFICATION       V51                    // Low voltage alert notification button on/off
 
 /* Blynk Labeled Value vpin */
 
