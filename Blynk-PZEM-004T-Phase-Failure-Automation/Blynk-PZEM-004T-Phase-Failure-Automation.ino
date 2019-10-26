@@ -593,7 +593,9 @@ void high_voltage_check()
     Serial.println("High voltage detected...");
     highvoltageflag = true;
     swith_off();
-  }  
+  } else {
+     highvoltageflag = false;
+  }
 }
 
 void low_volt_alert()                              // Function to send blynk push notifiction if low voltage is detected
