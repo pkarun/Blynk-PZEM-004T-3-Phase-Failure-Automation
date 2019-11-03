@@ -127,6 +127,7 @@ int underVoltageAlertOnOffState;         // Under voltage one time alert on off 
 int phaseFailureAlertOnOffState;         // Phase failure voltage one time alert on off state variable
 bool underVoltageAlertFlag = true;       // Under voltage alert flag set to true 
 
+bool blynkConnectionStatusForNotification = false;
 bool lowvoltagenotificationflag   = true;
 bool phasefailurenotificationflag = true;
 
@@ -478,6 +479,7 @@ void changeAddress(uint8_t OldslaveAddr, uint8_t NewslaveAddr)                  
 BLYNK_CONNECTED() {                                           // Every time we connect to the cloud...
   Serial.println("Blynk Connected");
   ReCnctCount = 0;
+  blynkConnectionStatusForNotification = true;
   Blynk.syncVirtual(VPIN_BUTTON_1);                           // Request the latest state from the server
   Blynk.syncVirtual(VPIN_BUTTON_2);
   Blynk.syncVirtual(VPIN_BUTTON_3);
@@ -487,7 +489,7 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_PHASE_FAIL_NOTIFICATION);
    
   Blynk.virtualWrite(VPIN_UPDATE_LED,         0);             // Turn off FOTA Led
-  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app
+  Blynk.virtualWrite(VPIN_FIRMWARE_UPDATE, HIGH);             // Turn off Firmware update button on app  
 }
 
 /* When App button is pushed - switch the state */
@@ -600,16 +602,16 @@ void high_voltage_check()
 
 void low_volt_alert()                              // Function to send blynk push notifiction if low voltage is detected
 {
-  if(lowvoltagenotificationflag == true && underVoltageAlertOnOffState == 0){ 
+  if(lowvoltagenotificationflag == true && underVoltageAlertOnOffState == 0 && blynkConnectionStatusForNotification == true){ 
     Serial.println("Sending Under voltage Blynk notification");
-    Blynk.notify("Under voltage detected!");
+    Blynk.notify("Low Voltage Detected!");
     lowvoltagenotificationflag = false;
   }
 }
 
 void phasefailurenotification()
 {
-   if(phasefailurenotificationflag == true && phaseFailureAlertOnOffState == 0){
+   if(phasefailurenotificationflag == true && phaseFailureAlertOnOffState == 0 && blynkConnectionStatusForNotification == true){
      Serial.println("Sending Phase Failure Blynk notification");
      Blynk.notify("Phase Failure Detected!");
      phasefailurenotificationflag = false;
@@ -678,6 +680,7 @@ void loop()
     Blynk.run();
   } 
   else if (ReCnctFlag == 0) {                                                 // If NOT connected and not already trying to reconnect, set timer to try to reconnect in 30 seconds
+      blynkConnectionStatusForNotification = false;
       ReCnctFlag = 1;                                                         // Set reconnection Flag
       Serial.println("Starting reconnection timer in 30 seconds...");
       timer.setTimeout(30000L, []() {                                         // Lambda Reconnection Timer Function

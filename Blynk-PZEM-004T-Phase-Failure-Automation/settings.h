@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////
 
 #define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
-#define BUILD_NUMBER          005                // Build number is something like change some variables in code and building binary file. 
+#define BUILD_NUMBER          001                // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
