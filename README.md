@@ -62,14 +62,16 @@ GND to GND</br>
 6) Go to the <code>secret.h</code> tab. Here you change Bynk Auth code, Wifi settings, server settings and few other parameters as per your project requirement.
 
 <h2>Screenshot</h2>
-<img src="/images/pzem-004t-3-phase-failure-automation-screenshot-1.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" width="350" height="" style="max-width:100%;">
+<img src="/images/1.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" width="350" height="" style="max-width:100%;"></br>
 
-<img src="/images/pzem-004t-3-phase-failure-automation-screenshot-2.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" width="350" height="" style="max-width:100%;">
+<img src="/images/2.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" width="350" height="" style="max-width:100%;"></br>
 
-<img src="/images/pzem-004t-3-phase-failure-automation-screenshot-3.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" width="350" height="" style="max-width:100%;">
+<img src="/images/3.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" width="350" height="" style="max-width:100%;"></br>
 
-<img src="/images/pzem-004t-3-phase-failure-automation-screenshot-4.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" width="350" height="" style="max-width:100%;">
+<img src="/images/4.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" width="350" height="" style="max-width:100%;"></br>
+
+<img src="/images/5.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 5" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 5" width="350" height="" style="max-width:100%;"></br>
 
 <h2>Scan QR Code on Blynk App</h2>
 
-<img src="/images/blynk-qr-code.png" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>
+<img src="/images/blynk-qr-code.jpeg" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>
