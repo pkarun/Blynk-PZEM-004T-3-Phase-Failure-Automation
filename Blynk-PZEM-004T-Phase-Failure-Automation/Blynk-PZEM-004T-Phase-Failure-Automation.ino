@@ -36,13 +36,12 @@
 
 */
 
-#define BLYNK_PRINT Serial        // Uncomment for debugging 
+//#define BLYNK_PRINT Serial        // Uncomment for debugging 
 
 #include "settings.h"           
 //#include "secret.h"               // <<--- UNCOMMENT this before you use and change values on config.h tab
 #include "my_secret.h"              // <<--- COMMENT-OUT or REMOVE this line before you use. This is my personal settings.
 
-#include <ArduinoOTA.h>
 #include <BlynkSimpleEsp8266.h>
 #include <SimpleTimer.h>
 #include <ModbusMaster.h>
@@ -65,8 +64,6 @@ static uint8_t pzemSlave1Addr = PZEM_SLAVE_1_ADDRESS;
 static uint8_t pzemSlave2Addr = PZEM_SLAVE_2_ADDRESS;
 static uint8_t pzemSlave3Addr = PZEM_SLAVE_3_ADDRESS;
 
-unsigned long oldTime = 0;
-
 ModbusMaster node1;
 ModbusMaster node2;
 ModbusMaster node3;
@@ -79,7 +76,6 @@ double active_power_1       = 0;
 double active_energy_1      = 0;
 double frequency_1          = 0;
 double power_factor_1       = 0;
-double over_power_alarm_1   = 0;
 
 double voltage_usage_2      = 0;
 double current_usage_2      = 0;
@@ -87,7 +83,6 @@ double active_power_2       = 0;
 double active_energy_2      = 0;
 double frequency_2          = 0;
 double power_factor_2       = 0;
-double over_power_alarm_2   = 0;
 
 double voltage_usage_3      = 0;
 double current_usage_3      = 0;
@@ -95,7 +90,6 @@ double active_power_3       = 0;
 double active_energy_3      = 0;
 double frequency_3          = 0;
 double power_factor_3       = 0;
-double over_power_alarm_3   = 0;
 
 double sum_of_voltage       = 0;
 double sum_of_current       = 0;
@@ -117,6 +111,7 @@ int relay3State             = HIGH;
 int relay4State             = HIGH;
 
 int auto_mode_state_1       = HIGH;
+int auto_mode_state_2       = HIGH;
 
 int ReCnctFlag;               // Reconnection Flag
 int ReCnctCount = 0;          // Reconnection counter
@@ -137,7 +132,7 @@ bool highvoltageflag    = false;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pzemSerial.begin(9600);
 
   /* start Modbus/RS-485 serial communication */
@@ -193,9 +188,7 @@ void setup()
   Blynk.config(AUTH);
   Blynk.connect();
 #endif   
-  
-  ArduinoOTA.setHostname(OTA_HOSTNAME);
-  ArduinoOTA.begin();
+
 
   /*********************************************************************************************\
       RELAY code
@@ -229,7 +222,6 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_1,         active_energy_1);
   Blynk.virtualWrite(vPIN_FREQUENCY_1,             frequency_1);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_1,          power_factor_1);
-  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_1,      over_power_alarm_1);
 
   Blynk.virtualWrite(vPIN_VOLTAGE_2,               voltage_usage_2);
   Blynk.virtualWrite(vPIN_CURRENT_USAGE_2,         current_usage_2);
@@ -237,7 +229,6 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_2,         active_energy_2);
   Blynk.virtualWrite(vPIN_FREQUENCY_2,             frequency_2);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_2,          power_factor_2);
-  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_2,      over_power_alarm_2);
 
   Blynk.virtualWrite(vPIN_VOLTAGE_3,               voltage_usage_3);
   Blynk.virtualWrite(vPIN_CURRENT_USAGE_3,         current_usage_3);
@@ -245,7 +236,6 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_ACTIVE_ENERGY_3,         active_energy_3);
   Blynk.virtualWrite(vPIN_FREQUENCY_3,             frequency_3);
   Blynk.virtualWrite(vPIN_POWER_FACTOR_3,          power_factor_3);
-  Blynk.virtualWrite(vPIN_OVER_POWER_ALARM_3,      over_power_alarm_3);
 
   Blynk.virtualWrite(vPIN_SUM_VOLTAGE,             sum_of_voltage);
   Blynk.virtualWrite(vPIN_SUM_CURRENT_USAGE,       sum_of_current);
@@ -254,7 +244,6 @@ void sendtoBlynk()                                                           // 
   Blynk.virtualWrite(vPIN_SUM_FREQUENCY,           sum_of_frequency);
   Blynk.virtualWrite(vPIN_SUM_POWER_FACTOR,        sum_of_power_factor);
 
-  Blynk.virtualWrite(VPIN_FIRMWARE_VERSION,        FIRMWARE_VERSION);
   Blynk.virtualWrite(VPIN_BUILD_NUMBER,            BUILD_NUMBER);  
 }
 
@@ -276,7 +265,6 @@ void pzemdevice1()                                                            //
     active_energy_1      = (node1.getResponseBuffer(0x05) / 1000.0f);
     frequency_1          = (node1.getResponseBuffer(0x07) / 10.0f);
     power_factor_1       = (node1.getResponseBuffer(0x08) / 100.0f);
-    over_power_alarm_1   = (node1.getResponseBuffer(0x09));
 
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_1);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_1, 3);    // A
@@ -284,7 +272,6 @@ void pzemdevice1()                                                            //
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_1, 3);    // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_1);           // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_1);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_1, 0);
     Serial.println("====================================================");
   }
   else {
@@ -296,14 +283,13 @@ void pzemdevice1()                                                            //
     active_energy_1      = 0;
     frequency_1          = 0;
     power_factor_1       = 0;
-    over_power_alarm_1   = 0;
+
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_1);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_1, 3);    // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_1);        // W
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_1, 3);    // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_1);           // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_1);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_1, 0);
     Serial.println("====================================================");
     swith_off();                                                                  // Calling swith_off() to turn off relays
   }
@@ -327,7 +313,6 @@ void pzemdevice2()                                                              
     active_energy_2      = (node2.getResponseBuffer(0x05) / 1000.0f);
     frequency_2          = (node2.getResponseBuffer(0x07) / 10.0f);
     power_factor_2       = (node2.getResponseBuffer(0x08) / 100.0f);
-    over_power_alarm_2   = (node2.getResponseBuffer(0x09));
 
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_2);         // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_2, 3);      // A
@@ -335,7 +320,6 @@ void pzemdevice2()                                                              
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_2, 3);      // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_2);             // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
   }
     else {
@@ -347,14 +331,12 @@ void pzemdevice2()                                                              
     active_energy_2      = 0;
     frequency_2          = 0;
     power_factor_2       = 0;
-    over_power_alarm_2   = 0;
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_2);         // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_2, 3);      // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_2);          // W
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_2, 3);      // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_2);             // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_2);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_2, 0);
     Serial.println("====================================================");
     swith_off(); 
   }
@@ -378,7 +360,6 @@ void pzemdevice3()                                                            //
     active_energy_3      = (node3.getResponseBuffer(0x05) / 1000.0f);
     frequency_3          = (node3.getResponseBuffer(0x07) / 10.0f);
     power_factor_3       = (node3.getResponseBuffer(0x08) / 100.0f);
-    over_power_alarm_3   = (node3.getResponseBuffer(0x09));
 
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_3);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_3, 3);    // A
@@ -386,7 +367,6 @@ void pzemdevice3()                                                            //
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_3, 3);    // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_3);           // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
     Serial.println("====================================================");
   }
   else {
@@ -398,14 +378,12 @@ void pzemdevice3()                                                            //
     active_energy_3      = 0;
     frequency_3          = 0;
     power_factor_3       = 0;
-    over_power_alarm_3   = 0;
     Serial.print("VOLTAGE:           ");   Serial.println(voltage_usage_3);       // V
     Serial.print("CURRENT_USAGE:     ");   Serial.println(current_usage_3, 3);    // A
     Serial.print("ACTIVE_POWER:      ");   Serial.println(active_power_3);        // W
     Serial.print("ACTIVE_ENERGY:     ");   Serial.println(active_energy_3, 3);    // kWh
     Serial.print("FREQUENCY:         ");   Serial.println(frequency_3);           // Hz
     Serial.print("POWER_FACTOR:      ");   Serial.println(power_factor_3);
-    Serial.print("OVER_POWER_ALARM:  ");   Serial.println(over_power_alarm_3, 0);
     Serial.println("====================================================");
     swith_off();
   }
@@ -485,6 +463,7 @@ BLYNK_CONNECTED() {                                           // Every time we c
   Blynk.syncVirtual(VPIN_BUTTON_3);
   Blynk.syncVirtual(VPIN_BUTTON_4);
   Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_1);
+  Blynk.syncVirtual(VPIN_AUTO_MODE_BUTTON_2);
   Blynk.syncVirtual(VPIN_LOW_V_NOTIFICATION);
   Blynk.syncVirtual(VPIN_PHASE_FAIL_NOTIFICATION);
    
@@ -505,7 +484,12 @@ BLYNK_WRITE(VPIN_BUTTON_1) {
 }
 BLYNK_WRITE(VPIN_BUTTON_2) {
   relay2State = param.asInt();
+  if(lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){   // Don't activate relay if voltage issue is there
   digitalWrite(RELAY_PIN_2, relay2State);
+  }
+  else{
+   Blynk.virtualWrite(VPIN_BUTTON_2, HIGH);       // Update Button Widget 
+  }
 }
 BLYNK_WRITE(VPIN_BUTTON_3) {
   relay3State = param.asInt();
@@ -517,6 +501,9 @@ BLYNK_WRITE(VPIN_BUTTON_4) {
 }
 BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_1) {                      // Get auto mode button status value
   auto_mode_state_1 = param.asInt();
+}
+BLYNK_WRITE(VPIN_AUTO_MODE_BUTTON_2) {                      // Get auto mode button status value
+  auto_mode_state_2 = param.asInt();
 }
 BLYNK_WRITE(VPIN_FIRMWARE_UPDATE) {                         // Get update button enabled or not
   firmwarestate = param.asInt();  
@@ -550,7 +537,7 @@ void checkPhysicalButton()                                  // Here we are going
   }
   
   if (digitalRead(PUSH_BUTTON_2) == LOW) {
-    if (pushButton2State != LOW) {                        // pushButton2State is used to avoid sequential toggles     
+    if (pushButton2State != LOW && (lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false) ) {                        // pushButton2State is used to avoid sequential toggles     
       relay2State = !relay2State;                         // Toggle Relay state
       digitalWrite(RELAY_PIN_2, relay2State);
       Blynk.virtualWrite(VPIN_BUTTON_2, relay2State);     // Update Button Widget
@@ -620,20 +607,33 @@ void phasefailurenotification()
 
 void swith_off()                                              // Function to switch off relays
 {
-    Serial.println("Switching off relay now..");
+    Serial.println("Switching off Relay 1 now..");
     digitalWrite(RELAY_PIN_1, HIGH);                // Turnoff Relay 1
     Serial.println("Relay 1 OFF..");       
     Blynk.virtualWrite(VPIN_BUTTON_1, HIGH);        // Update Relay Off status on Blynk app   
+
+    Serial.println("Switching off Relay 2 now..");
+    digitalWrite(RELAY_PIN_2, HIGH);                // Turnoff Relay 2
+    Serial.println("Relay 2 OFF..");       
+    Blynk.virtualWrite(VPIN_BUTTON_2, HIGH);        // Update Relay Off status on Blynk app   
 }
   
 void auto_mode()                                      // Function to check if auto mode is ON and all voltage value is greater than voltage cutoff value, then turn on 2 relays
 {    
-  if(auto_mode_state_1 == LOW && lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){  //checks if auto mode is ON and voltage values is greater than min value
-    Serial.println("All condition is TRUE...swtiching on relay now.");    
+  if(auto_mode_state_1 == LOW && lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){  //checks if auto mode is ON and voltage values is greater than min value  - Motor 1
+    Serial.println("All condition is TRUE...swtiching on relay 1 now.");    
     digitalWrite(RELAY_PIN_1, LOW);                  // Turn on Relay 1         
     Blynk.virtualWrite(VPIN_BUTTON_1, LOW);          // Update Blynk button status to ON    
     Serial.println("RELAY 1 Turned ON"); 
   }
+
+    if(auto_mode_state_2 == LOW && lowvoltageflag == false && highvoltageflag == false && phasefailureflag == false){  //checks if auto mode is ON and voltage values is greater than min value - Motor 2 
+    Serial.println("All condition is TRUE...swtiching on relay 2 now.");    
+    digitalWrite(RELAY_PIN_2, LOW);                  // Turn on Relay 2         
+    Blynk.virtualWrite(VPIN_BUTTON_2, LOW);          // Update Blynk button status to ON    
+    Serial.println("RELAY 2 Turned ON"); 
+  }
+  
 }
   
 void checkforupdate()
@@ -674,7 +674,6 @@ void checkforupdate()
 
 void loop()
 {
-  ArduinoOTA.handle();                                                        // For OTA
   timer.run();
   if (Blynk.connected()) {                                                    // If connected run as normal
     Blynk.run();

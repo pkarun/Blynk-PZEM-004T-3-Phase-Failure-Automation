@@ -2,13 +2,13 @@
 Blynk PZEM 004T 3 Phase failure motor automation.  
 
 <h2>What it Does?</h2>
-1) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1</br> 
+1) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 and Relay 2</br> 
 2) Monitors 3 PZEM 004T v3.0 device data with one ESP8266 device (multiple salve)</br> 
-3) Auto Mode ON/OFF - With Auto Mode ON, it turn ON Relay 1 if it meets all 3 Phase voltage reaches minimum voltage value. If any those condition don't satisify, then it won't turn on</br> 
-4) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 </br>
+3) Auto Mode ON/OFF - With Auto Mode ON, it turn ON Relay (M1 for Relay 1 and M2 for Relay 2) if it meets all 3 Phase voltage reaches minimum voltage value. If any those condition don't satisify, then it won't turn on</br> 
+4) If voltage is lessthan minimum set value for all 3 Phase, then it turn OFF Relay 1 and Relay 2</br>
 5) Show sum of voltage, current usage, active power, active energy, frequency and power factor</br>
 6) You can update firmware using "HTTP Server OTA" method. In other words, through internet you can update firware without having physical access to device or without connecting to same network</br>
-7) For other 3 Relays user can connect other devices to control On/Off through internet using blynk app </br>
+7) For other 2 Relays user can connect other devices to control On/Off through internet using blynk app </br>
 
 <h2>Requirements</h2>
 1) <a href ="http://s.click.aliexpress.com/e/ElytDjIu">3 PZEM-004T v3.0</a></br> 
@@ -62,16 +62,15 @@ GND to GND</br>
 6) Go to the <code>secret.h</code> tab. Here you change Bynk Auth code, Wifi settings, server settings and few other parameters as per your project requirement.
 
 <h2>Screenshot</h2>
-<img src="/images/1.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 1" width="350" height="" style="max-width:100%;"></br>
-
-<img src="/images/2.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 2" width="350" height="" style="max-width:100%;"></br>
-
-<img src="/images/3.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 3" width="350" height="" style="max-width:100%;"></br>
-
-<img src="/images/4.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 4" width="350" height="" style="max-width:100%;"></br>
-
-<img src="/images/5.png" alt="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 5" title="Blynk PZEM 004T 3 Phase Failure Automation Screenshot 5" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/1.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/2.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/3.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/4.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/5.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/6.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/7.jpg" width="350" height="" style="max-width:100%;"></br>
+<img src="/images/8.jpg" width="350" height="" style="max-width:100%;"></br>
 
 <h2>Scan QR Code on Blynk App</h2>
 
-<img src="/images/blynk-qr-code.jpeg" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>
+<img src="/images/blynk-qr-code.png" alt="Blynk Project QR code" title="Blynk Project QR code" style="max-width:100%;"></a>

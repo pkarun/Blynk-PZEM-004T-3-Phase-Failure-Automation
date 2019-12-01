@@ -2,8 +2,7 @@
 //                           Settings                          //
 /////////////////////////////////////////////////////////////////
 
-#define FIRMWARE_VERSION      00.20               // Version number. Increase each version as per your software version. Used for FOTA
-#define BUILD_NUMBER          001                // Build number is something like change some variables in code and building binary file. 
+#define BUILD_NUMBER          01                // Build number is something like change some variables in code and building binary file. 
 
 /***************************************************
           NodeMCU Pin Assignment
@@ -36,7 +35,7 @@
 How often you would like to call function? Enter time in milliseconds  
  **************************************************/
 
-#define GET_PZEM_DATA_TIME          500L                        // How often you wish to get PZEM data. Enter time in milliseconds 
+#define GET_PZEM_DATA_TIME          1000L                        // How often you wish to get PZEM data. Enter time in milliseconds 
 #define SEND_TO_BLYNK_TIME          1000L                       // How often you would like to send data to blynk app. Enter time in milliseconds  
 #define AUTO_MODE_TIME              20000L
 #define PHYSICAL_BUTTON_TIME        500L
@@ -65,8 +64,9 @@ How often you would like to call function? Enter time in milliseconds
 #define VPIN_BUTTON_4                 V4
 
 #define VPIN_AUTO_MODE_BUTTON_1       V5                     // This button is to switch on motor in auto mode
-#define VPIN_FIRMWARE_UPDATE          V6
-#define VPIN_FIRMWARE_VERSION         V7
+#define VPIN_AUTO_MODE_BUTTON_2       V6                     // This button is to switch on motor in auto mode
+
+#define VPIN_FIRMWARE_UPDATE          V7
 #define VPIN_UPDATE_LED               V8
 #define VPIN_BUILD_NUMBER             V9
 
@@ -81,7 +81,6 @@ How often you would like to call function? Enter time in milliseconds
 #define vPIN_ACTIVE_ENERGY_1          V14
 #define vPIN_FREQUENCY_1              V15
 #define vPIN_POWER_FACTOR_1           V16
-#define vPIN_OVER_POWER_ALARM_1       V17
 
 #define vPIN_VOLTAGE_2                V21
 #define vPIN_CURRENT_USAGE_2          V22
@@ -89,7 +88,6 @@ How often you would like to call function? Enter time in milliseconds
 #define vPIN_ACTIVE_ENERGY_2          V24
 #define vPIN_FREQUENCY_2              V25
 #define vPIN_POWER_FACTOR_2           V26
-#define vPIN_OVER_POWER_ALARM_2       V27
 
 #define vPIN_VOLTAGE_3                V31
 #define vPIN_CURRENT_USAGE_3          V32
@@ -97,7 +95,6 @@ How often you would like to call function? Enter time in milliseconds
 #define vPIN_ACTIVE_ENERGY_3          V34
 #define vPIN_FREQUENCY_3              V35
 #define vPIN_POWER_FACTOR_3           V36
-#define vPIN_OVER_POWER_ALARM_3       V37
 
 #define vPIN_SUM_VOLTAGE              V41
 #define vPIN_SUM_CURRENT_USAGE        V42
